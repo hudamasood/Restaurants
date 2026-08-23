@@ -37,7 +37,7 @@ export function Reveal({
   id,
 }: RevealProps) {
   const canAnimate = useCanAnimate();
-  const { ref, state } = useReveal<HTMLDivElement>({ margin, once });
+  const { ref, state, settled } = useReveal<HTMLDivElement>({ margin, once });
 
   return (
     <Tag
@@ -45,6 +45,7 @@ export function Reveal({
       ref={ref}
       className={className}
       data-reveal={state}
+      data-settled={settled}
       style={{
         '--reveal-y': `${y}px`,
         '--reveal-delay': `${canAnimate ? delay * 1000 : 0}ms`,

@@ -18,7 +18,7 @@ const LINKS = [
 
 export function Nav() {
   const location = useLocation();
-  const { canAnimate, isTablet } = useMotionState();
+  const { isTablet } = useMotionState();
   const { any: overlayOpen } = useOverlay();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -38,21 +38,17 @@ export function Nav() {
 
   return (
     <>
-      <motion.header
+      <header
         data-scrolled={solid}
-        className="fixed inset-x-0 top-0 z-[90]"
-        initial={{ opacity: canAnimate ? 0 : 1, y: canAnimate ? -8 : 0 }}
-        animate={{ opacity: 1, y: hidden ? '-100%' : 0 }}
-        transition={{
-          duration: hidden ? 0.3 : DUR.base,
-          delay: hidden ? 0 : 0.7,
-          ease: EASE.house,
-        }}
+        data-hidden={hidden}
+        className="nav-shell fixed inset-x-0 top-0 z-[90]"
         style={{
           background: solid ? 'rgb(11 11 12 / 0.92)' : 'transparent',
           backdropFilter: solid && !isTablet ? 'blur(12px)' : undefined,
           borderBottom: `1px solid ${solid ? 'var(--color-smoke)' : 'transparent'}`,
-          transition: `background-color ${DUR.short}s var(--ease-house), border-color ${DUR.short}s var(--ease-house), backdrop-filter ${DUR.short}s var(--ease-house)`,
+          transitionProperty: 'transform, background-color, border-color, backdrop-filter',
+          transitionDuration: `300ms, ${DUR.short}s, ${DUR.short}s, ${DUR.short}s`,
+          transitionTimingFunction: 'var(--ease-house)',
         }}
       >
         <div
@@ -101,7 +97,7 @@ export function Nav() {
             <MenuIcon open={drawerOpen} />
           </button>
         </div>
-      </motion.header>
+      </header>
 
       <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </>

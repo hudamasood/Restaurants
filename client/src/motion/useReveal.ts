@@ -19,11 +19,19 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(options?: {
   once?: boolean;
   /** Skip the observer and reveal as soon as it is mounted. */
   onMount?: boolean;
+  /** How long the transition needs before we stop trusting it. */
+  settleAfter?: number;
 }) {
-  const { margin = '0px 0px -15% 0px', once = true, onMount = false } = options ?? {};
+  const {
+    margin = '0px 0px -15% 0px',
+    once = true,
+    onMount = false,
+    settleAfter = 2600,
+  } = options ?? {};
   const canAnimate = useCanAnimate();
   const ref = useRef<T>(null);
   const [state, setState] = useState<'idle' | 'hidden' | 'shown'>('idle');
+  const [settled, setSettled] = useState(false);
 
   // Hide first, in a layout effect so the visible baseline is never painted
   // as a flash before the reveal begins.
@@ -39,8 +47,11 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(options?: {
     if (state !== 'hidden') return;
 
     if (onMount || !canAnimate) {
-      const id = requestAnimationFrame(() => setState('shown'));
-      return () => cancelAnimationFrame(id);
+      // A timer rather than requestAnimationFrame: rAF does not fire in a
+      // throttled or backgrounded tab, which would leave the element pinned
+      // at its hidden state forever. Timers still run.
+      const id = window.setTimeout(() => setState('shown'), 16);
+      return () => window.clearTimeout(id);
     }
 
     const el = ref.current;
@@ -76,5 +87,22 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(options?: {
     };
   }, [state, margin, once, onMount, canAnimate]);
 
-  return { ref, state: state === 'idle' ? undefined : state };
+  /**
+   * Flipping the state is not enough on its own: the transition that carries
+   * the element into place can itself be frozen part-way — a throttled tab
+   * leaves a half-clipped line of type on screen indefinitely. Once the
+   * transition has had its full run, drop it entirely so the element resolves
+   * to its final computed value immediately.
+   */
+  useEffect(() => {
+    if (state !== 'shown') return;
+    const t = window.setTimeout(() => setSettled(true), settleAfter);
+    return () => window.clearTimeout(t);
+  }, [state, settleAfter]);
+
+  return {
+    ref,
+    state: state === 'idle' ? undefined : state,
+    settled: settled ? '' : undefined,
+  };
 }

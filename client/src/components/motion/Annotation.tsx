@@ -44,7 +44,7 @@ export function AnnotationLayer({
 }
 
 function AnnotationMark({ point, index }: { point: AnnotationPoint; index: number }) {
-  const { ref, state } = useReveal<HTMLDivElement>({ margin: '0px 0px -40% 0px' });
+  const { ref, state, settled } = useReveal<HTMLDivElement>({ margin: '0px 0px -40% 0px' });
   const side = point.side ?? (point.x > 50 ? 'left' : 'right');
   const dir = side === 'right' ? 1 : -1;
 
@@ -52,6 +52,7 @@ function AnnotationMark({ point, index }: { point: AnnotationPoint; index: numbe
     <div
       ref={ref}
       data-anno={state}
+      data-settled={settled}
       className="absolute"
       style={{
         left: `${point.x}%`,

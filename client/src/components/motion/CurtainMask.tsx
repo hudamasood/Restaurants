@@ -43,13 +43,14 @@ export function CurtainMask({
   once = true,
 }: CurtainMaskProps) {
   const canAnimate = useCanAnimate();
-  const { ref, state } = useReveal<HTMLDivElement>({ margin, once });
+  const { ref, state, settled } = useReveal<HTMLDivElement>({ margin, once });
 
   return (
     <div
       ref={ref}
       className={className}
       data-curtain={state}
+      data-settled={settled}
       style={{
         '--curtain-from': CLIP_FROM[from],
         '--curtain-scale': innerScale,

@@ -701,3 +701,44 @@ select.field__control {
   transform: none !important;
   stroke-dashoffset: 0 !important;
 }
+
+/* Once a reveal has had its full run, drop the transition so the element
+   resolves to its final value immediately. A transition frozen part-way
+   otherwise leaves half-clipped type or a partly-drawn line on screen. */
+[data-settled],
+[data-settled] > [data-curtain-inner],
+[data-settled] span > span,
+[data-settled] .anno-dot,
+[data-settled] .anno-halo,
+[data-settled] .anno-line,
+[data-settled] .anno-label {
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}
+
+/* ── Nav entrance ─────────────────────────────────────────────────────
+   A CSS animation rather than a transition from a hidden state, and
+   deliberately without `forwards` fill: the element's resting style is
+   fully visible, so if the animation never plays the navigation is simply
+   there. Chrome must never be able to strand itself off-screen. */
+@keyframes nav-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.nav-shell {
+  animation: nav-in var(--duration-base) var(--ease-house) 700ms backwards;
+  transition: transform 300ms var(--ease-house);
+}
+.nav-shell[data-hidden='true'] {
+  transform: translateY(-100%);
+}
+.motion-off .nav-shell {
+  animation: none;
+}

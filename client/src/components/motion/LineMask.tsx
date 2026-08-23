@@ -97,7 +97,7 @@ export function LineMask({
 }: LineMaskProps) {
   const canAnimate = useCanAnimate();
   const { hostRef, lines } = useMeasuredLines(text, canAnimate);
-  const { ref, state } = useReveal<HTMLDivElement>({
+  const { ref, state, settled } = useReveal<HTMLDivElement>({
     margin,
     once,
     onMount: animateOnMount,
@@ -120,6 +120,7 @@ export function LineMask({
         ref.current = node;
       }}
       className={className}
+      data-settled={settled}
     >
       <span className="u-vh">{text}</span>
       <Tag aria-hidden="true" data-lines={state} style={{ display: 'block' }}>
@@ -163,12 +164,22 @@ export function LineMaskControlled({
   const canAnimate = useCanAnimate();
   const { hostRef, lines } = useMeasuredLines(text, canAnimate);
   const [entered, setEntered] = useState(false);
+  const [settled, setSettled] = useState(false);
 
   useEffect(() => {
     if (!canAnimate) return;
-    const id = requestAnimationFrame(() => setEntered(true));
-    return () => cancelAnimationFrame(id);
+    // See useReveal: rAF does not fire in a backgrounded tab.
+    const id = window.setTimeout(() => setEntered(true), 16);
+    return () => window.clearTimeout(id);
   }, [canAnimate]);
+
+  // Same guard as useReveal: a transition frozen part-way would leave a
+  // half-clipped line of display type on screen indefinitely.
+  useEffect(() => {
+    if (!canAnimate || state !== 'in') return;
+    const t = window.setTimeout(() => setSettled(true), 2600);
+    return () => window.clearTimeout(t);
+  }, [canAnimate, state]);
 
   if (!canAnimate) {
     return <div className={className}>{text}</div>;
@@ -177,7 +188,7 @@ export function LineMaskControlled({
   const shown = state === 'in' && entered;
 
   return (
-    <div ref={hostRef} className={className}>
+    <div ref={hostRef} className={className} data-settled={settled ? '' : undefined}>
       <span className="u-vh">{text}</span>
       <span aria-hidden="true" data-lines={shown ? 'shown' : 'hidden'} style={{ display: 'block' }}>
         {lines.map((line, i) => (
