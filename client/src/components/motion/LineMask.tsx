@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import type { ElementType } from 'react';
 import { DUR, EASE, STAGGER, VIEWPORT } from '@/motion/constants';
-import { useCanAnimate } from '@/motion/guards';
+import { useCanAnimate, useSettled } from '@/motion/guards';
 
 interface LineMaskProps {
   text: string;
@@ -40,6 +40,9 @@ export function LineMask({
   const hostRef = useRef<HTMLDivElement>(null);
   const [lines, setLines] = useState<string[] | null>(null);
   const Tag = as as ElementType;
+
+  // If a mount-driven reveal never lands, the text would stay hidden forever.
+  const settled = useSettled((delay + duration) * 1000 + 1200);
 
   // Measure: render words, group by offsetTop, collapse back into lines.
   useLayoutEffect(() => {
@@ -84,8 +87,8 @@ export function LineMask({
     return () => ro.disconnect();
   }, [text, canAnimate]);
 
-  // Reduced motion: the whole block fades, no split at all.
-  if (!canAnimate) {
+  // Reduced motion, or a mount animation that never completed.
+  if (!canAnimate || (animateOnMount && settled)) {
     return (
       <motion.div
         className={className}
@@ -161,6 +164,7 @@ export function LineMaskControlled({
   const canAnimate = useCanAnimate();
   const [lines, setLines] = useState<string[]>([text]);
   const hostRef = useRef<HTMLDivElement>(null);
+  const settled = useSettled(2400);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -199,7 +203,9 @@ export function LineMaskControlled({
     return () => ro.disconnect();
   }, [text, canAnimate]);
 
-  if (!canAnimate) {
+  // Same guard: once the reveal has had its full run, render the final state
+  // outright rather than trusting the animation to have landed.
+  if (!canAnimate || (settled && state === 'in')) {
     return <div className={className}>{text}</div>;
   }
 

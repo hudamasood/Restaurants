@@ -204,14 +204,23 @@ ol {
   /* Ramped so that text sitting anywhere in the lower two-thirds clears
      4.5:1 against bone. Food photography is bright and high-contrast; a
      gentle scrim is the reference site's exact readability failure. */
-  background: linear-gradient(
-    to top,
-    rgb(11 11 12 / 0.96) 0%,
-    rgb(11 11 12 / 0.88) 26%,
-    rgb(11 11 12 / 0.64) 48%,
-    rgb(11 11 12 / 0.34) 70%,
-    rgb(11 11 12 / 0.12) 100%
-  );
+  background:
+    linear-gradient(
+      to top,
+      rgb(11 11 12 / 0.96) 0%,
+      rgb(11 11 12 / 0.88) 26%,
+      rgb(11 11 12 / 0.64) 48%,
+      rgb(11 11 12 / 0.34) 70%,
+      rgb(11 11 12 / 0.12) 100%
+    ),
+    /* The nav sits transparent over the hero, so the top needs its own
+       ramp or the wordmark and links are unreadable on a bright frame. */
+    linear-gradient(
+      to bottom,
+      rgb(11 11 12 / 0.72) 0%,
+      rgb(11 11 12 / 0.34) 11%,
+      rgb(11 11 12 / 0) 24%
+    );
 }
 
 .u-scrim-full {

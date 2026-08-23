@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { motion } from 'motion/react';
 import { DUR, EASE } from '@/motion/constants';
 
@@ -36,6 +36,17 @@ export function Picture({
   objectPosition = 'center',
 }: PictureProps) {
   const [loaded, setLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  /**
+   * A cached image is already `complete` before React attaches onLoad, so the
+   * event never fires and the picture would sit at opacity 0 forever. Every
+   * warm-cache visit hit this. Check the element directly on mount.
+   */
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img?.complete && img.naturalWidth > 0) setLoaded(true);
+  }, [src]);
 
   const url = (w: number, q = 78) => {
     const sep = src.includes('?') ? '&' : '?';
@@ -60,6 +71,7 @@ export function Picture({
         }}
       />
       <motion.img
+        ref={imgRef}
         src={url(1600)}
         srcSet={srcSet}
         sizes={sizes}
@@ -70,7 +82,8 @@ export function Picture({
         decoding={priority ? 'sync' : 'async'}
         fetchPriority={priority ? 'high' : 'auto'}
         onLoad={() => setLoaded(true)}
-        initial={{ opacity: 0 }}
+        onError={() => setLoaded(true)}
+        initial={false}
         animate={{ opacity: loaded ? 1 : 0 }}
         transition={{ duration: DUR.base, ease: EASE.house }}
         style={{

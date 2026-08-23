@@ -82,8 +82,8 @@ function HeroStage({
       {/* Content */}
       <div className="relative z-10 flex h-full flex-col justify-end pb-[max(3.5rem,7vh)]">
         <div className="u-shell">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-[20ch]">
+          <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
+            <div className="min-w-0 lg:flex-1">
               {HERO_CHAPTERS.map((c, i) => (
                 <div
                   key={c.id}
@@ -218,7 +218,7 @@ function HeroMobile() {
           <div className="relative z-10 flex h-full flex-col justify-end pb-16">
             <div className="u-shell">
               <LineMaskControlled text={c.headline} state="in" className="u-display t-display mb-5" />
-              <p style={{ color: 'var(--color-bone-dim)', maxWidth: '32ch' }}>{c.body}</p>
+              <p style={{ color: 'var(--color-bone-dim)', maxWidth: '34rem' }}>{c.body}</p>
 
               {i === 0 && (
                 <div className="mt-8 flex flex-col gap-3">

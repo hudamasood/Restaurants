@@ -62,7 +62,7 @@
   --nav-h: 88px;
 
   /* Fluid type scale — display */
-  --t-hero: clamp(2.75rem, 8.5vw, 8.5rem);
+  --t-hero: clamp(2.5rem, 6vw, 6.25rem);
   --t-display: clamp(2.25rem, 6vw, 5rem);
   --t-section: clamp(1.875rem, 4.2vw, 3.5rem);
   --t-dish: clamp(1.25rem, 2vw, 1.75rem);

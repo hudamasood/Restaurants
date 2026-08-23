@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 export type MotionPreference = 'full' | 'reduced';
 
@@ -71,4 +71,26 @@ export function frameBudget(total: number, isMobile: boolean, lowEnd: boolean): 
   if (lowEnd) return 1;
   if (isMobile) return Math.min(total, 12);
   return total;
+}
+
+/**
+ * Mount-driven reveals hide their content until an animation moves them into
+ * place. If that animation never completes — a backgrounded tab on first
+ * paint, a stalled rAF loop, a hostile embedding — the text stays invisible
+ * permanently, which breaks the rule that animated content must be readable
+ * at its final state.
+ *
+ * This resolves true once the animation has had its full duration plus a
+ * buffer to finish. Components then render the settled state outright rather
+ * than trusting the animation to have landed.
+ */
+export function useSettled(afterMs: number): boolean {
+  const [settled, setSettled] = useState(false);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setSettled(true), afterMs);
+    return () => window.clearTimeout(t);
+  }, [afterMs]);
+
+  return settled;
 }
