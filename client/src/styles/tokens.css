@@ -1,0 +1,87 @@
+@import 'tailwindcss';
+
+/* ═══════════════════════════════════════════════════════════════════
+   MARROW & HEARTH — Design tokens
+   Ground fixed at #0B0B0C by the scrolled-nav rule in the motion spec.
+   Everything else derived outward. Saffron is used ONCE per viewport.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ── Colour ───────────────────────────────────────────────────── */
+  --color-ink: #0b0b0c;
+  --color-ink-soft: #101012;
+  --color-ash: #141416;
+  --color-ash-2: #1b1b1f;
+  --color-ash-3: #232328;
+  --color-smoke: #2c2c31;
+  --color-smoke-lo: #202024;
+
+  --color-bone: #e9e3d7;
+  --color-bone-dim: #948e83;
+  --color-bone-faint: #635e56;
+  --color-bone-ghost: #403c37;
+
+  --color-oxblood: #4a1119;
+  --color-oxblood-deep: #2a0a10;
+  --color-oxblood-lift: #61171f;
+
+  --color-saffron: #d99a2b;
+  --color-saffron-deep: #b87d1c;
+  --color-ember: #c4622a;
+
+  --color-ok: #6e8f63;
+  --color-warn: #c08a3e;
+  --color-stop: #a8474b;
+
+  /* ── Type ─────────────────────────────────────────────────────── */
+  --font-display: 'Bodoni Moda', 'Didot', 'Times New Roman', serif;
+  --font-body: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* ── Easing ───────────────────────────────────────────────────── */
+  --ease-house: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-exit: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ── Duration ─────────────────────────────────────────────────── */
+  --duration-micro: 200ms;
+  --duration-short: 400ms;
+  --duration-base: 600ms;
+  --duration-long: 900ms;
+  --duration-cine: 1100ms;
+
+  /* ── Layout ───────────────────────────────────────────────────── */
+  --spacing-gutter: 1.5rem;
+  --breakpoint-xs: 30rem;
+}
+
+:root {
+  /* Live accent — the colourBleed signature interpolates this toward ember */
+  --accent-live: #d99a2b;
+
+  /* Nav height, read by sticky offsets */
+  --nav-h: 88px;
+
+  /* Fluid type scale — display */
+  --t-hero: clamp(2.75rem, 8.5vw, 8.5rem);
+  --t-display: clamp(2.25rem, 6vw, 5rem);
+  --t-section: clamp(1.875rem, 4.2vw, 3.5rem);
+  --t-dish: clamp(1.25rem, 2vw, 1.75rem);
+  --t-dish-lg: clamp(1.75rem, 3.4vw, 2.75rem);
+
+  /* Body scale */
+  --t-lede: clamp(1.0625rem, 1.4vw, 1.3125rem);
+  --t-body: 1rem;
+  --t-small: 0.875rem;
+
+  /* Mono / label scale */
+  --t-label: 0.6875rem;
+  --t-label-sm: 0.625rem;
+
+  --measure: 68ch;
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --nav-h: 68px;
+  }
+}
