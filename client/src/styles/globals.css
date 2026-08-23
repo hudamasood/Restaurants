@@ -642,3 +642,62 @@ select.field__control {
 .motion-off [data-reveal='hidden'] {
   opacity: 0;
 }
+
+/* ── Annotation ───────────────────────────────────────────────────────
+   The reference site's callouts state temperature; ours state provenance
+   and time. Dot scales in, leader line draws, label follows. Driven by
+   CSS for the same reason as the reveals above. */
+[data-anno] .anno-dot,
+[data-anno] .anno-halo {
+  transition: transform var(--duration-short) var(--ease-house);
+}
+[data-anno] .anno-halo {
+  transition-delay: 100ms;
+}
+[data-anno='hidden'] .anno-dot {
+  transform: scale(0);
+}
+[data-anno='hidden'] .anno-halo {
+  transform: scale(0.2);
+  opacity: 0;
+}
+[data-anno='shown'] .anno-dot {
+  transform: scale(1);
+}
+[data-anno='shown'] .anno-halo {
+  transform: scale(1);
+  opacity: 1;
+}
+
+[data-anno] .anno-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--duration-base) var(--ease-house) 300ms;
+}
+[data-anno='hidden'] .anno-line {
+  stroke-dashoffset: 1;
+}
+
+[data-anno] .anno-label {
+  transition:
+    opacity var(--duration-base) var(--ease-house) 800ms,
+    transform var(--duration-base) var(--ease-house) 800ms;
+}
+[data-anno='hidden'] .anno-label {
+  opacity: 0;
+  transform: translateY(6px);
+}
+[data-anno='shown'] .anno-label {
+  opacity: 1;
+  transform: none;
+}
+
+.motion-off [data-anno] .anno-dot,
+.motion-off [data-anno] .anno-halo,
+.motion-off [data-anno] .anno-line,
+.motion-off [data-anno] .anno-label {
+  transition-duration: var(--duration-micro);
+  transition-delay: 0ms;
+  transform: none !important;
+  stroke-dashoffset: 0 !important;
+}
