@@ -72,7 +72,7 @@ function StripItem({
       transition={{
         duration: canAnimate ? DUR.base : DUR.micro,
         delay: canAnimate ? DELAYS[index] : 0,
-        ease: EASE.house as unknown as number[],
+        ease: EASE.house,
       }}
     >
       <Link to={`/gallery?image=${item.id}`} className="block h-full w-full">

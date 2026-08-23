@@ -66,7 +66,7 @@ export function ReviewCarousel() {
               exit={canAnimate ? { opacity: 0, y: '-24%' } : { opacity: 0 }}
               transition={{
                 duration: canAnimate ? 0.5 : DUR.micro,
-                ease: EASE.house as unknown as number[],
+                ease: EASE.house,
               }}
               className="u-measure"
             >

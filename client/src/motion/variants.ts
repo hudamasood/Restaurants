@@ -3,13 +3,13 @@ import { DUR, EASE, STAGGER } from './constants';
 
 const house = (duration: number, delay = 0): Transition => ({
   duration,
-  ease: EASE.house as unknown as number[],
+  ease: EASE.house,
   delay,
 });
 
 const exit = (duration: number, delay = 0): Transition => ({
   duration,
-  ease: EASE.exit as unknown as number[],
+  ease: EASE.exit,
   delay,
 });
 
@@ -116,7 +116,7 @@ export const pageOverlay: Variants = {
 export const pageContent: Variants = {
   hidden: { opacity: 1 },
   /** Never animate outgoing position — it fights the incoming wipe. */
-  out: { opacity: 0, transition: { duration: DUR.micro, ease: EASE.exit as unknown as number[] } },
+  out: { opacity: 0, transition: { duration: DUR.micro, ease: EASE.exit } },
 };
 
 /* ── Step transitions (reservation flow) ───────────────────────────── */

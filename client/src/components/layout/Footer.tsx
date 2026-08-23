@@ -26,7 +26,7 @@ export function Footer() {
         viewport={{ once: true, margin: '0px 0px -20% 0px' }}
         transition={{
           duration: canAnimate ? DUR.long : DUR.micro,
-          ease: EASE.house as unknown as number[],
+          ease: EASE.house,
         }}
       />
 
@@ -208,7 +208,7 @@ export function Footer() {
           transition={{
             duration: canAnimate ? DUR.base : DUR.micro,
             delay: canAnimate ? 0.4 : 0,
-            ease: EASE.house as unknown as number[],
+            ease: EASE.house,
           }}
         >
           <div>

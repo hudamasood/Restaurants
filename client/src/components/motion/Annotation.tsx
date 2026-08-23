@@ -90,7 +90,7 @@ function AnnotationMark({
         transition={{
           duration: canAnimate ? 0.3 : DUR.micro,
           delay: base,
-          ease: EASE.house as unknown as number[],
+          ease: EASE.house,
         }}
       />
 
@@ -108,7 +108,7 @@ function AnnotationMark({
           initial={{ scale: 0.2, opacity: 0 }}
           whileInView={{ scale: 1, opacity: 1 }}
           viewport={viewport}
-          transition={{ duration: DUR.base, delay: base + 0.1, ease: EASE.house as unknown as number[] }}
+          transition={{ duration: DUR.base, delay: base + 0.1, ease: EASE.house }}
         />
       )}
 
@@ -132,7 +132,7 @@ function AnnotationMark({
           transition={{
             duration: canAnimate ? 0.5 : DUR.micro,
             delay: lineDelay,
-            ease: EASE.house as unknown as number[],
+            ease: EASE.house,
           }}
         />
       </svg>
@@ -152,7 +152,7 @@ function AnnotationMark({
         transition={{
           duration: canAnimate ? DUR.base : DUR.micro,
           delay: labelDelay,
-          ease: EASE.house as unknown as number[],
+          ease: EASE.house,
         }}
       >
         <span

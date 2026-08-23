@@ -49,7 +49,7 @@ export function DishQuickView({ dish, onClose }: { dish: Dish | null; onClose: (
             exit={canAnimate ? { opacity: 0, y: 12, scale: 0.99 } : { opacity: 0 }}
             transition={{
               duration: canAnimate ? 0.5 : DUR.micro,
-              ease: EASE.house as unknown as number[],
+              ease: EASE.house,
             }}
           >
             <button
@@ -156,7 +156,7 @@ export function DishQuickView({ dish, onClose }: { dish: Dish | null; onClose: (
                           y: 0,
                           transition: {
                             duration: canAnimate ? DUR.base : DUR.micro,
-                            ease: EASE.house as unknown as number[],
+                            ease: EASE.house,
                           },
                         },
                       }}

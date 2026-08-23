@@ -51,7 +51,7 @@ export function CurtainMask({
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once, margin }}
-        transition={{ duration: DUR.micro, ease: EASE.house as unknown as number[] }}
+        transition={{ duration: DUR.micro, ease: EASE.house }}
       >
         {children}
       </motion.div>
@@ -65,14 +65,14 @@ export function CurtainMask({
       initial={{ clipPath: clip.hidden }}
       whileInView={{ clipPath: clip.show }}
       viewport={{ once, margin }}
-      transition={{ duration, delay, ease: EASE.house as unknown as number[] }}
+      transition={{ duration, delay, ease: EASE.house }}
     >
       <motion.div
         style={{ height: '100%', willChange: 'transform' }}
         initial={{ scale: innerScale }}
         whileInView={{ scale: 1 }}
         viewport={{ once, margin }}
-        transition={{ duration, delay, ease: EASE.house as unknown as number[] }}
+        transition={{ duration, delay, ease: EASE.house }}
       >
         {children}
       </motion.div>

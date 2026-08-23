@@ -253,7 +253,7 @@ export default function Menu() {
                 initial={{ opacity: 0, scale: 0.94 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.94 }}
-                transition={{ duration: DUR.short, ease: EASE.house as unknown as number[] }}
+                transition={{ duration: DUR.short, ease: EASE.house }}
                 onClick={() => toggle(chip.key, chip.v)}
                 className="u-mono flex items-center gap-2 px-3 py-1.5"
                 style={{ border: '1px solid var(--color-bone-ghost)', color: 'var(--color-bone)' }}
@@ -492,7 +492,7 @@ function FilterSheet({
             initial={canAnimate ? { y: '100%' } : { opacity: 0 }}
             animate={canAnimate ? { y: 0 } : { opacity: 1 }}
             exit={canAnimate ? { y: '100%' } : { opacity: 0 }}
-            transition={{ duration: DUR.short, ease: EASE.house as unknown as number[] }}
+            transition={{ duration: DUR.short, ease: EASE.house }}
           >
             <div className="u-shell py-8">
               <h2 className="u-mono mb-8" style={{ color: 'var(--color-bone-faint)' }}>
@@ -581,7 +581,7 @@ function SearchOverlay({
           initial={canAnimate ? { clipPath: 'inset(0 0 100% 0)' } : { opacity: 0 }}
           animate={canAnimate ? { clipPath: 'inset(0 0 0% 0)' } : { opacity: 1 }}
           exit={canAnimate ? { clipPath: 'inset(0 0 100% 0)' } : { opacity: 0 }}
-          transition={{ duration: DUR.short, ease: EASE.house as unknown as number[] }}
+          transition={{ duration: DUR.short, ease: EASE.house }}
         >
           <div className="u-shell py-10" style={{ paddingTop: 'calc(var(--nav-h) + 2rem)' }}>
             <div className="mb-10 flex items-center gap-6">
@@ -615,7 +615,7 @@ function SearchOverlay({
                   transition={{
                     duration: DUR.base,
                     delay: canAnimate ? Math.min(i, 8) * 0.06 : 0,
-                    ease: EASE.house as unknown as number[],
+                    ease: EASE.house,
                   }}
                 >
                   <DishCard dish={d} onQuickView={onSelect} />

@@ -92,7 +92,7 @@ export function LineMask({
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once, margin }}
-        transition={{ duration: DUR.micro, ease: EASE.house as unknown as number[] }}
+        transition={{ duration: DUR.micro, ease: EASE.house }}
       >
         <Tag>{text}</Tag>
       </motion.div>
@@ -130,7 +130,7 @@ export function LineMask({
                 hidden: { y: '110%' },
                 show: {
                   y: '0%',
-                  transition: { duration, ease: EASE.house as unknown as number[] },
+                  transition: { duration, ease: EASE.house },
                 },
               }}
             >
@@ -220,7 +220,7 @@ export function LineMaskControlled({
               transition={{
                 duration: DUR.base,
                 delay: state === 'in' ? i * interval : 0,
-                ease: (state === 'in' ? EASE.house : EASE.exit) as unknown as number[],
+                ease: (state === 'in' ? EASE.house : EASE.exit),
               }}
             >
               {line}

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { motion, useMotionValueEvent, useTransform } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { DUR, EASE, DEPTH } from '@/motion/constants';
+import { DUR, DEPTH } from '@/motion/constants';
 import { useMotionState } from '@/motion/guards';
 import { usePassProgress } from '@/motion/scroll';
 import { Picture } from '@/components/media/Picture';

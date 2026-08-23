@@ -29,7 +29,7 @@ export function ChapterCounter({
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
-      transition={{ duration: DUR.base, ease: EASE.house as unknown as number[] }}
+      transition={{ duration: DUR.base, ease: EASE.house }}
     >
       <span style={{ color: 'var(--color-bone)' }}>{pad(current)}</span>
       <span

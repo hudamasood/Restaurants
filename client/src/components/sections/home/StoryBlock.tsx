@@ -37,7 +37,7 @@ export function StoryBlock() {
                     className="absolute inset-0"
                     initial={false}
                     animate={{ opacity: active === i ? 1 : 0 }}
-                    transition={{ duration: 0.7, ease: EASE.house as unknown as number[] }}
+                    transition={{ duration: 0.7, ease: EASE.house }}
                   >
                     <Picture
                       src={m.image}

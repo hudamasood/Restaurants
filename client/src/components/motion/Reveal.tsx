@@ -43,14 +43,14 @@ export function Reveal({
         show: {
           opacity: 1,
           y: 0,
-          transition: { duration, delay, ease: EASE.house as unknown as number[] },
+          transition: { duration, delay, ease: EASE.house },
         },
       }
     : {
         hidden: { opacity: 0 },
         show: {
           opacity: 1,
-          transition: { duration: DUR.micro, delay: 0, ease: EASE.house as unknown as number[] },
+          transition: { duration: DUR.micro, delay: 0, ease: EASE.house },
         },
       };
 
@@ -132,14 +132,14 @@ export function RevealItem({
         show: {
           opacity: 1,
           y: 0,
-          transition: { duration: DUR.base, ease: EASE.house as unknown as number[] },
+          transition: { duration: DUR.base, ease: EASE.house },
         },
       }
     : {
         hidden: { opacity: 0 },
         show: {
           opacity: 1,
-          transition: { duration: DUR.micro, ease: EASE.house as unknown as number[] },
+          transition: { duration: DUR.micro, ease: EASE.house },
         },
       };
 

@@ -65,7 +65,7 @@ function TrailItem({
       transition={{
         duration: DUR.micro,
         delay: index * 0.06,
-        ease: EASE.house as unknown as number[],
+        ease: EASE.house,
       }}
       style={{
         position: 'absolute',

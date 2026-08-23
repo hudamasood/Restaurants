@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { motion, useMotionValueEvent, useTransform, type MotionValue } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { DUR, EASE } from '@/motion/constants';
@@ -20,8 +20,6 @@ import { BRAND } from '@/data/brand';
  * CTAs and nav do not participate — they are chrome, not content.
  */
 export function Hero() {
-  const { isMobile } = useMotionState();
-
   return (
     <StickyStage
       id="hero"
@@ -64,7 +62,7 @@ function HeroStage({
           className="absolute inset-0"
           initial={false}
           animate={{ opacity: chapter === i ? 1 : 0 }}
-          transition={{ duration: 0.7, ease: EASE.house as unknown as number[] }}
+          transition={{ duration: 0.7, ease: EASE.house }}
         >
           <motion.div className="h-full w-full" style={enabled ? { y: imageY } : undefined}>
             <Picture
@@ -112,7 +110,7 @@ function HeroStage({
                 transition={{
                   duration: DUR.base,
                   delay: 0.3,
-                  ease: EASE.house as unknown as number[],
+                  ease: EASE.house,
                 }}
               >
                 {BRAND.claim}
@@ -125,7 +123,7 @@ function HeroStage({
                 transition={{
                   duration: DUR.base,
                   delay: 0.5,
-                  ease: EASE.house as unknown as number[],
+                  ease: EASE.house,
                 }}
               >
                 <Link to="/reserve" className="btn btn--filled">

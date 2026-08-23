@@ -4,14 +4,16 @@
  * value isn't here, either it belongs here or the animation is wrong.
  */
 
+type Bezier = [number, number, number, number];
+
 export const EASE = {
   /** Long slow settle — the default for everything entering. */
-  house: [0.22, 1, 0.36, 1],
+  house: [0.22, 1, 0.36, 1] as Bezier,
   /** Exits only. */
-  exit: [0.65, 0, 0.35, 1],
+  exit: [0.65, 0, 0.35, 1] as Bezier,
   /** Scroll-linked scrubbing only, where scroll drives the value directly. */
-  linear: [0, 0, 1, 1],
-} as const;
+  linear: [0, 0, 1, 1] as Bezier,
+};
 
 export const DUR = {
   micro: 0.2, // hover, focus, tap

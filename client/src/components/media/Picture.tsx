@@ -72,7 +72,7 @@ export function Picture({
         onLoad={() => setLoaded(true)}
         initial={{ opacity: 0 }}
         animate={{ opacity: loaded ? 1 : 0 }}
-        transition={{ duration: DUR.base, ease: EASE.house as unknown as number[] }}
+        transition={{ duration: DUR.base, ease: EASE.house }}
         style={{
           position: 'absolute',
           inset: 0,

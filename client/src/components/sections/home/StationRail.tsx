@@ -94,7 +94,7 @@ function RailStage({ progress, enabled }: { progress: MotionValue<number>; enabl
     const target = Math.round(station.get());
     animate(station, target, {
       duration: DUR.base,
-      ease: EASE.house as unknown as number[],
+      ease: EASE.house,
       onComplete: () => {
         // Re-sync the page scroll so the two modes never diverge.
         const section = sectionRef.current?.closest('.stage-track') as HTMLElement | null;

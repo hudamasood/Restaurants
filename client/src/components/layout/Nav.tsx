@@ -46,7 +46,7 @@ export function Nav() {
         transition={{
           duration: hidden ? 0.3 : DUR.base,
           delay: hidden ? 0 : 0.7,
-          ease: EASE.house as unknown as number[],
+          ease: EASE.house,
         }}
         style={{
           background: solid ? 'rgb(11 11 12 / 0.92)' : 'transparent',
@@ -123,12 +123,12 @@ function MenuIcon({ open }: { open: boolean }) {
       <motion.span
         style={{ ...line, position: 'absolute', top: 0 }}
         animate={{ y: open ? 5.5 : 0, rotate: open ? 45 : 0 }}
-        transition={{ duration: 0.3, ease: EASE.house as unknown as number[] }}
+        transition={{ duration: 0.3, ease: EASE.house }}
       />
       <motion.span
         style={{ ...line, position: 'absolute', top: 11 }}
         animate={{ y: open ? -5.5 : 0, rotate: open ? -45 : 0 }}
-        transition={{ duration: 0.3, ease: EASE.house as unknown as number[] }}
+        transition={{ duration: 0.3, ease: EASE.house }}
       />
     </span>
   );
@@ -151,7 +151,7 @@ function NavDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
           exit={canAnimate ? { clipPath: 'inset(100% 0 0 0)' } : { opacity: 0 }}
           transition={{
             duration: canAnimate ? DUR.short : DUR.micro,
-            ease: EASE.house as unknown as number[],
+            ease: EASE.house,
           }}
         >
           <div
@@ -167,7 +167,7 @@ function NavDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                   transition={{
                     duration: canAnimate ? DUR.base : DUR.micro,
                     delay: canAnimate ? 0.15 + i * 0.06 : 0,
-                    ease: EASE.house as unknown as number[],
+                    ease: EASE.house,
                   }}
                 >
                   <Link
@@ -190,7 +190,7 @@ function NavDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
               transition={{
                 duration: canAnimate ? DUR.base : DUR.micro,
                 delay: canAnimate ? 0.15 + LINKS.length * 0.06 : 0,
-                ease: EASE.house as unknown as number[],
+                ease: EASE.house,
               }}
             >
               <Link to="/reserve" onClick={onClose} className="btn btn--filled w-full">

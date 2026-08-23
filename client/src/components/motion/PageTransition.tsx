@@ -56,7 +56,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
           exit={{ opacity: 0 }}
           transition={{
             duration: canAnimate ? DUR.micro : 0,
-            ease: EASE.exit as unknown as number[],
+            ease: EASE.exit,
           }}
         >
           {children}
@@ -73,7 +73,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
             exit={{ y: '-100%' }}
             transition={{
               duration: 0.45,
-              ease: EASE.exit as unknown as number[],
+              ease: EASE.exit,
             }}
           >
             <motion.div

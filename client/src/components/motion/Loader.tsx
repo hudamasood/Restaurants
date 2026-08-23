@@ -87,7 +87,7 @@ export function Loader({ onDone }: { onDone: () => void }) {
           }
           transition={{
             duration: canAnimate ? 0.7 : DUR.micro,
-            ease: EASE.house as unknown as number[],
+            ease: EASE.house,
           }}
         >
           <div className="flex flex-col items-center gap-7 px-6">
@@ -98,7 +98,7 @@ export function Loader({ onDone }: { onDone: () => void }) {
                 animate={canAnimate ? { y: '0%' } : { opacity: 1 }}
                 transition={{
                   duration: canAnimate ? DUR.base : DUR.micro,
-                  ease: EASE.house as unknown as number[],
+                  ease: EASE.house,
                 }}
               >
                 <Wordmark size="lg" tone="bone" />
@@ -121,7 +121,7 @@ export function Loader({ onDone }: { onDone: () => void }) {
                 }}
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: progress }}
-                transition={{ duration: 0.35, ease: EASE.house as unknown as number[] }}
+                transition={{ duration: 0.35, ease: EASE.house }}
               />
             </div>
           </div>
