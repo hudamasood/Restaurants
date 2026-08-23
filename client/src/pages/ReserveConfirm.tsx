@@ -1,12 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { motion } from 'motion/react';
 import { PageShell } from '@/components/layout/PageShell';
 import { LineMask } from '@/components/motion/LineMask';
 import { CurtainMask } from '@/components/motion/CurtainMask';
 import { Reveal } from '@/components/motion/Reveal';
-import { DUR, EASE } from '@/motion/constants';
-import { useCanAnimate } from '@/motion/guards';
 import { BRAND } from '@/data/brand';
 import { SEATING_AREAS } from '@/data/site';
 import { formatDate } from '@/lib/format';
@@ -14,7 +11,6 @@ import type { Reservation } from '@/types';
 
 export default function ReserveConfirm() {
   const { reference } = useParams<{ reference: string }>();
-  const canAnimate = useCanAnimate();
   const [booking, setBooking] = useState<Reservation | null>(null);
 
   useEffect(() => {
@@ -74,16 +70,7 @@ export default function ReserveConfirm() {
         />
 
         {/* Reference code line-masks in, mono, +300ms */}
-        <motion.div
-          className="mb-14"
-          initial={{ opacity: 0, y: canAnimate ? 12 : 0 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: DUR.base,
-            delay: 0.3,
-            ease: EASE.house,
-          }}
-        >
+        <div className="enter-rise mb-14" style={{ animationDelay: '300ms' }}>
           <p className="u-mono mb-3" style={{ color: 'var(--color-bone-faint)' }}>
             Reference
           </p>
@@ -93,7 +80,7 @@ export default function ReserveConfirm() {
           >
             {reference}
           </p>
-        </motion.div>
+        </div>
 
         {booking ? (
           <div className="grid gap-14 lg:grid-cols-12 lg:gap-16">
@@ -114,17 +101,13 @@ export default function ReserveConfirm() {
                     ? [{ label: 'Access', value: booking.accessibilityNotes }]
                     : []),
                 ].map((row, i) => (
-                  <motion.div
+                  <div
                     key={row.label}
-                    initial={{ opacity: 0, y: canAnimate ? 10 : 0 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: DUR.base,
-                      delay: 0.4 + i * 0.06,
-                      ease: EASE.house,
+                    className="enter-rise flex flex-wrap items-baseline justify-between gap-4 border-t py-4"
+                    style={{
+                      borderColor: 'var(--color-smoke)',
+                      animationDelay: `${400 + i * 60}ms`,
                     }}
-                    className="flex flex-wrap items-baseline justify-between gap-4 border-t py-4"
-                    style={{ borderColor: 'var(--color-smoke)' }}
                   >
                     <dt className="u-mono" style={{ color: 'var(--color-bone-faint)' }}>
                       {row.label}
@@ -132,7 +115,7 @@ export default function ReserveConfirm() {
                     <dd style={{ color: 'var(--color-bone)', textAlign: 'right', maxWidth: '40ch' }}>
                       {row.value}
                     </dd>
-                  </motion.div>
+                  </div>
                 ))}
               </dl>
 

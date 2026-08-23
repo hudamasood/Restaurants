@@ -1,5 +1,4 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { motion } from 'motion/react';
 import { PageShell } from '@/components/layout/PageShell';
 import { Picture } from '@/components/media/Picture';
 import { CurtainMask } from '@/components/motion/CurtainMask';
@@ -8,15 +7,13 @@ import { Reveal, RevealGroup, RevealItem } from '@/components/motion/Reveal';
 import { AnnotationLayer, AnnotationCaptions } from '@/components/motion/Annotation';
 import { DishSignature, signatureLabel } from '@/components/sections/dish/DishSignature';
 import { Token } from '@/components/primitives/Button';
-import { DUR, EASE } from '@/motion/constants';
-import { useCanAnimate } from '@/motion/guards';
+import { DUR } from '@/motion/constants';
 import { STATION_LABELS, adjacentSignatures, dishById, dishBySlug } from '@/data/menu';
 import { price, dietaryTokens } from '@/lib/format';
 
 export default function DishChapter() {
   const { slug } = useParams<{ slug: string }>();
   const dish = slug ? dishBySlug(slug) : undefined;
-  const canAnimate = useCanAnimate();
 
   if (!dish) return <Navigate to="/menu" replace />;
   if (!dish.isSignature) return <Navigate to={`/menu?dish=${dish.slug}`} replace />;
@@ -40,12 +37,10 @@ export default function DishChapter() {
     >
       {/* Full-bleed hero. Chaining cross-dissolves this rather than wiping. */}
       <header className="relative" style={{ minHeight: '92svh', paddingTop: 'var(--nav-h)' }}>
-        <motion.div
+        <div
           key={dish.id}
-          className="absolute inset-0"
-          initial={{ opacity: canAnimate ? 0 : 1 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: DUR.cine, ease: EASE.house }}
+          className="enter-fade absolute inset-0"
+          style={{ animationDuration: `${DUR.cine}s` }}
         >
           <Picture
             src={dish.media.landscape ?? dish.media.primary}
@@ -55,7 +50,7 @@ export default function DishChapter() {
             sizes="100vw"
             objectPosition="center 42%"
           />
-        </motion.div>
+        </div>
         <div className="u-scrim" />
 
         <div className="relative z-10 flex h-full min-h-[92svh] flex-col justify-end pb-16">

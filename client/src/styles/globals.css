@@ -742,3 +742,40 @@ select.field__control {
 .motion-off .nav-shell {
   animation: none;
 }
+
+/* ── Mount-time entrances ─────────────────────────────────────────────
+   Same principle as the nav: a keyframe animation with no forwards fill,
+   so the resting style is the visible one. These fire during initial page
+   load — the moment a tab is most likely to be backgrounded — so they must
+   not be able to leave content hidden. Delay comes from an inline
+   animation-delay. */
+@keyframes enter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes enter-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.enter-rise {
+  animation: enter-rise var(--duration-base) var(--ease-house) backwards;
+}
+.enter-fade {
+  animation: enter-fade var(--duration-base) var(--ease-house) backwards;
+}
+.motion-off .enter-rise,
+.motion-off .enter-fade {
+  animation: enter-fade var(--duration-micro) var(--ease-house) backwards;
+}

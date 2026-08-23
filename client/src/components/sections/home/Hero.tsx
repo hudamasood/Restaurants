@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { motion, useMotionValueEvent, useTransform, type MotionValue } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { DUR, EASE } from '@/motion/constants';
-import { useMotionState } from '@/motion/guards';
 import { StickyStage } from '@/components/motion/StickyStage';
 import { Picture } from '@/components/media/Picture';
 import { LineMaskControlled } from '@/components/motion/LineMask';
@@ -41,7 +40,6 @@ function HeroStage({
   enabled: boolean;
 }) {
   const [chapter, setChapter] = useState(0);
-  const { canAnimate } = useMotionState();
 
   useMotionValueEvent(progress, 'change', (p) => {
     const next = p < 0.33 ? 0 : p < 0.66 ? 1 : 2;
@@ -102,29 +100,20 @@ function HeroStage({
             </div>
 
             <div className="flex shrink-0 flex-col items-start gap-7 lg:items-end">
-              <motion.p
-                className="u-mono max-w-[28ch] lg:text-right"
-                style={{ color: 'var(--color-bone-dim)', lineHeight: 1.9 }}
-                initial={{ opacity: 0, y: canAnimate ? 8 : 0 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: DUR.base,
-                  delay: 0.3,
-                  ease: EASE.house,
+              <p
+                className="u-mono enter-rise max-w-[28ch] lg:text-right"
+                style={{
+                  color: 'var(--color-bone-dim)',
+                  lineHeight: 1.9,
+                  animationDelay: '300ms',
                 }}
               >
                 {BRAND.claim}
-              </motion.p>
+              </p>
 
-              <motion.div
-                className="flex flex-wrap items-center gap-3"
-                initial={{ opacity: 0, y: canAnimate ? 12 : 0 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: DUR.base,
-                  delay: 0.5,
-                  ease: EASE.house,
-                }}
+              <div
+                className="enter-rise flex flex-wrap items-center gap-3"
+                style={{ animationDelay: '500ms' }}
               >
                 <Link to="/reserve" className="btn btn--filled">
                   <span>Reserve a table</span>
@@ -132,16 +121,14 @@ function HeroStage({
                 <Link to="/menu" className="btn btn--outline">
                   <span>The menu</span>
                 </Link>
-              </motion.div>
+              </div>
             </div>
           </div>
 
           {/* Chapter counter, bottom-left */}
-          <motion.div
-            className="mt-12 flex items-center gap-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: DUR.base, delay: 0.6 }}
+          <div
+            className="enter-fade mt-12 flex items-center gap-4"
+            style={{ animationDelay: '600ms' }}
           >
             <span
               className="u-num"
@@ -179,7 +166,7 @@ function HeroStage({
             >
               {String(HERO_CHAPTERS.length).padStart(2, '0')}
             </span>
-          </motion.div>
+          </div>
         </div>
       </div>
 
