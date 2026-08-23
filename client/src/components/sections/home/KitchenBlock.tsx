@@ -55,7 +55,7 @@ export function KitchenBlock() {
               <LineMask
                 text={`“${first.quote}”`}
                 as="blockquote"
-                className="u-display"
+                className="u-display t-section"
                 margin="0px 0px -25% 0px"
               />
               <Reveal delay={0.2}>

@@ -68,7 +68,7 @@ export default function ExperiencePage() {
                       {e.capacity}
                     </p>
                   </Reveal>
-                  <LineMask text={e.name} as="h2" className="u-display mb-5" />
+                  <LineMask text={e.name} as="h2" className="u-display t-section mb-5" />
                   <Reveal delay={0.1}>
                     <p
                       className="mb-7"

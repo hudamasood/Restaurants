@@ -56,7 +56,7 @@ export default function Kitchen() {
                 <p className="u-mono mb-4" style={{ color: 'var(--color-saffron)' }}>
                   {STATION_LABELS[chef.station]}
                 </p>
-                <LineMask text={chef.name} as="h2" className="u-display mb-3" />
+                <LineMask text={chef.name} as="h2" className="u-display t-dish-lg mb-3" />
                 <Reveal delay={0.08}>
                   <p className="u-mono mb-6" style={{ color: 'var(--color-bone-faint)' }}>
                     {chef.role}
@@ -89,7 +89,7 @@ export default function Kitchen() {
                         </p>
                         {chef.quote && (
                           <blockquote
-                            className="u-display mt-8 border-l pl-6"
+                            className="u-display t-dish mt-8 border-l pl-6"
                             style={{
                               fontSize: 'var(--t-dish)',
                               borderColor: 'var(--color-saffron)',

@@ -84,7 +84,7 @@ export function StoryBlock() {
                 <LineMask
                   text={m.heading}
                   as="h2"
-                  className="u-display mb-6"
+                  className="u-display t-section mb-6"
                   margin="0px 0px -25% 0px"
                 />
                 <Reveal delay={0.1}>
@@ -178,7 +178,7 @@ function StoryMobile() {
             <p className="u-mono mb-4" style={{ color: 'var(--color-saffron)' }}>
               {m.label}
             </p>
-            <LineMask text={m.heading} as="h2" className="u-display mb-4" />
+            <LineMask text={m.heading} as="h2" className="u-display t-section mb-4" />
             <Reveal delay={0.08}>
               <p style={{ color: 'var(--color-bone-dim)', lineHeight: 1.7 }}>{m.body}</p>
             </Reveal>

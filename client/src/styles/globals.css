@@ -117,6 +117,36 @@ ol {
   font-family: var(--font-display);
   font-weight: 400;
   letter-spacing: -0.015em;
+  /* Default to the page-heading size. Anything needing another step in the
+     scale takes one of the .t-* classes below, or an inline font-size. */
+  font-size: var(--t-display);
+  line-height: 1.02;
+}
+
+.t-hero {
+  font-size: var(--t-hero);
+  line-height: 0.94;
+  letter-spacing: -0.025em;
+}
+
+.t-display {
+  font-size: var(--t-display);
+  line-height: 1.02;
+}
+
+.t-section {
+  font-size: var(--t-section);
+  line-height: 1.1;
+}
+
+.t-dish-lg {
+  font-size: var(--t-dish-lg);
+  line-height: 1.14;
+}
+
+.t-dish {
+  font-size: var(--t-dish);
+  line-height: 1.2;
 }
 
 .u-mono {
@@ -171,12 +201,16 @@ ol {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  /* Ramped so that text sitting anywhere in the lower two-thirds clears
+     4.5:1 against bone. Food photography is bright and high-contrast; a
+     gentle scrim is the reference site's exact readability failure. */
   background: linear-gradient(
     to top,
-    rgb(11 11 12 / 0.94) 0%,
-    rgb(11 11 12 / 0.72) 22%,
-    rgb(11 11 12 / 0.34) 52%,
-    rgb(11 11 12 / 0.08) 100%
+    rgb(11 11 12 / 0.96) 0%,
+    rgb(11 11 12 / 0.88) 26%,
+    rgb(11 11 12 / 0.64) 48%,
+    rgb(11 11 12 / 0.34) 70%,
+    rgb(11 11 12 / 0.12) 100%
   );
 }
 
@@ -184,20 +218,22 @@ ol {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: rgb(11 11 12 / 0.52);
+  background: rgb(11 11 12 / 0.68);
 }
 
 .u-scrim-left {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(
-    to right,
-    rgb(11 11 12 / 0.94) 0%,
-    rgb(11 11 12 / 0.7) 30%,
-    rgb(11 11 12 / 0.25) 62%,
-    rgb(11 11 12 / 0.05) 100%
-  );
+  background:
+    linear-gradient(
+      to right,
+      rgb(11 11 12 / 0.95) 0%,
+      rgb(11 11 12 / 0.82) 32%,
+      rgb(11 11 12 / 0.42) 64%,
+      rgb(11 11 12 / 0.12) 100%
+    ),
+    linear-gradient(to top, rgb(11 11 12 / 0.5), transparent 55%);
 }
 
 /* Film grain — a single repeating SVG noise, composited once */

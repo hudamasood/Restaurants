@@ -225,7 +225,7 @@ export default function DishChapter() {
                   Paired zero-proof
                 </p>
               </Reveal>
-              <LineMask text={paired.name} as="h2" className="u-display mb-5" />
+              <LineMask text={paired.name} as="h2" className="u-display t-section mb-5" />
               <Reveal delay={0.1}>
                 <p className="mb-7" style={{ color: 'var(--color-bone-dim)', maxWidth: '44ch', lineHeight: 1.7 }}>
                   {paired.description}

@@ -224,7 +224,7 @@ function RailStage({ progress, enabled }: { progress: MotionValue<number>; enabl
                   opacity only and the mask runs on settle. */}
               {dragging ? (
                 <h2
-                  className="u-display mb-5"
+                  className="u-display t-section mb-5"
                   style={{ fontSize: 'var(--t-section)', opacity: 0.85 }}
                 >
                   {active.name}
@@ -233,7 +233,7 @@ function RailStage({ progress, enabled }: { progress: MotionValue<number>; enabl
                 <LineMaskControlled
                   text={active.name}
                   state="in"
-                  className="u-display mb-5"
+                  className="u-display t-section mb-5"
                   key={active.id}
                 />
               )}

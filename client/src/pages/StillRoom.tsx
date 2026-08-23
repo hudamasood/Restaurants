@@ -77,7 +77,7 @@ export default function StillRoom() {
                   The list
                 </p>
               </Reveal>
-              <LineMask text="Twelve zero-proof" as="h2" className="u-display" />
+              <LineMask text="Twelve zero-proof" as="h2" className="u-display t-section" />
             </div>
             <Reveal delay={0.1}>
               <p className="u-num" style={{ color: 'var(--color-bone-faint)' }}>
@@ -105,7 +105,7 @@ export default function StillRoom() {
                 The flight
               </p>
             </Reveal>
-            <LineMask text="Five drinks, five courses" as="h2" className="u-display mb-6" />
+            <LineMask text="Five drinks, five courses" as="h2" className="u-display t-section mb-6" />
             <Reveal delay={0.1}>
               <p className="mb-8" style={{ color: 'var(--color-bone-dim)', maxWidth: '44ch', lineHeight: 1.7 }}>
                 A pairing built against the tasting menu and adjusted each week. Poured in five
@@ -145,7 +145,7 @@ export default function StillRoom() {
               Chai &amp; coffee
             </p>
           </Reveal>
-          <LineMask text="The end of the meal" as="h2" className="u-display mb-12" />
+          <LineMask text="The end of the meal" as="h2" className="u-display t-section mb-12" />
 
           <RevealGroup interval={0.06} className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
             {HOT.map((d) => (
@@ -191,7 +191,7 @@ function FamilyStage({
           <p className="u-mono mb-5" style={{ color: 'var(--color-saffron)' }}>
             {family.technique}
           </p>
-          <h2 className="u-display mb-6" style={{ fontSize: 'var(--t-display)', maxWidth: '12ch' }}>
+          <h2 className="u-display t-section mb-6" style={{ fontSize: 'var(--t-display)', maxWidth: '12ch' }}>
             {family.name}
           </h2>
           <p style={{ color: 'var(--color-bone-dim)', maxWidth: '46ch', fontSize: 'var(--t-lede)', lineHeight: 1.7 }}>
@@ -222,7 +222,7 @@ function FamilyMobile({
         <p className="u-mono mb-3" style={{ color: 'var(--color-saffron)' }}>
           {family.technique}
         </p>
-        <LineMask text={family.name} as="h2" className="u-display mb-4" />
+        <LineMask text={family.name} as="h2" className="u-display t-section mb-4" />
         <Reveal delay={0.08}>
           <p style={{ color: 'var(--color-bone-dim)', lineHeight: 1.7 }}>{family.description}</p>
         </Reveal>

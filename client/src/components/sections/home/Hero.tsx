@@ -94,7 +94,7 @@ function HeroStage({
                   <LineMaskControlled
                     text={c.headline}
                     state="in"
-                    className="u-display"
+                    className="u-display t-hero"
                     key={`${c.id}-${chapter === i}`}
                   />
                 </div>
@@ -217,7 +217,7 @@ function HeroMobile() {
 
           <div className="relative z-10 flex h-full flex-col justify-end pb-16">
             <div className="u-shell">
-              <LineMaskControlled text={c.headline} state="in" className="u-display mb-5" />
+              <LineMaskControlled text={c.headline} state="in" className="u-display t-display mb-5" />
               <p style={{ color: 'var(--color-bone-dim)', maxWidth: '32ch' }}>{c.body}</p>
 
               {i === 0 && (

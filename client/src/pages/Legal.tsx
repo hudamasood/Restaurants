@@ -83,7 +83,7 @@ export default function Legal() {
             {content.title}
           </p>
         </Reveal>
-        <LineMask text={content.intro} as="h1" className="u-display mb-16" animateOnMount />
+        <LineMask text={content.intro} as="h1" className="u-display t-section mb-16" animateOnMount />
 
         <div className="grid gap-x-16 gap-y-12 lg:grid-cols-2">
           {content.sections.map((s, i) => (

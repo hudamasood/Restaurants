@@ -126,7 +126,7 @@ function Chapter({
             <LineMask
               text={dish.name}
               as="h2"
-              className="u-display mb-6"
+              className="u-display t-section mb-6"
               margin="0px 0px -20% 0px"
             />
 
