@@ -1,7 +1,7 @@
-import { motion } from 'motion/react';
-import type { ReactNode } from 'react';
-import { DUR, EASE, VIEWPORT } from '@/motion/constants';
+import type { ReactNode, CSSProperties } from 'react';
+import { DUR, VIEWPORT } from '@/motion/constants';
 import { useCanAnimate } from '@/motion/guards';
+import { useReveal } from '@/motion/useReveal';
 
 interface CurtainMaskProps {
   children: ReactNode;
@@ -16,20 +16,21 @@ interface CurtainMaskProps {
   once?: boolean;
 }
 
-const CLIP = {
-  bottom: { hidden: 'inset(0 0 100% 0)', show: 'inset(0 0 0% 0)' },
-  top: { hidden: 'inset(100% 0 0 0)', show: 'inset(0% 0 0 0)' },
-  left: { hidden: 'inset(0 100% 0 0)', show: 'inset(0 0% 0 0)' },
-  right: { hidden: 'inset(0 0 0 100%)', show: 'inset(0 0 0 0%)' },
+const CLIP_FROM = {
+  bottom: 'inset(0 0 100% 0)',
+  top: 'inset(100% 0 0 0)',
+  left: 'inset(0 100% 0 0)',
+  right: 'inset(0 0 0 100%)',
 };
 
 /**
- * clip-path image reveal. The <Picture> inside simultaneously runs a
- * scale settle — parallax *within* the mask, which is what makes this read
- * as cinematic rather than as a wipe.
+ * clip-path image reveal. The picture inside simultaneously runs a scale
+ * settle — parallax *within* the mask, which is what makes this read as
+ * cinematic rather than as a wipe.
  *
- * clip-path is compositor-friendly but not free; the spec caps concurrent
- * instances at 3 per viewport.
+ * Both halves are CSS transitions on a data attribute, so an interrupted
+ * reveal still resolves to the uncovered state instead of leaving the image
+ * clipped away.
  */
 export function CurtainMask({
   children,
@@ -42,40 +43,28 @@ export function CurtainMask({
   once = true,
 }: CurtainMaskProps) {
   const canAnimate = useCanAnimate();
-  const clip = CLIP[from];
-
-  if (!canAnimate) {
-    return (
-      <motion.div
-        className={className}
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once, margin }}
-        transition={{ duration: DUR.micro, ease: EASE.house }}
-      >
-        {children}
-      </motion.div>
-    );
-  }
+  const { ref, state } = useReveal<HTMLDivElement>({ margin, once });
 
   return (
-    <motion.div
+    <div
+      ref={ref}
       className={className}
-      style={{ overflow: 'hidden', willChange: 'clip-path' }}
-      initial={{ clipPath: clip.hidden }}
-      whileInView={{ clipPath: clip.show }}
-      viewport={{ once, margin }}
-      transition={{ duration, delay, ease: EASE.house }}
+      data-curtain={state}
+      style={{
+        '--curtain-from': CLIP_FROM[from],
+        '--curtain-scale': innerScale,
+        '--reveal-delay': `${canAnimate ? delay * 1000 : 0}ms`,
+        transitionDuration: `${canAnimate ? duration : DUR.micro}s`,
+      } as CSSProperties}
     >
-      <motion.div
-        style={{ height: '100%', willChange: 'transform' }}
-        initial={{ scale: innerScale }}
-        whileInView={{ scale: 1 }}
-        viewport={{ once, margin }}
-        transition={{ duration, delay, ease: EASE.house }}
+      <div
+        data-curtain-inner=""
+        style={{
+          transitionDuration: `${canAnimate ? duration : DUR.micro}s`,
+        }}
       >
         {children}
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }

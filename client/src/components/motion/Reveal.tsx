@@ -1,7 +1,7 @@
-import { motion, type Variants } from 'motion/react';
-import type { ElementType, ReactNode } from 'react';
-import { DUR, EASE, VIEWPORT } from '@/motion/constants';
+import { Children, cloneElement, isValidElement, type ElementType, type ReactNode } from 'react';
+import { DUR, STAGGER, STAGGER_CAP, VIEWPORT } from '@/motion/constants';
 import { useCanAnimate } from '@/motion/guards';
+import { useReveal } from '@/motion/useReveal';
 
 interface RevealProps {
   children: ReactNode;
@@ -20,60 +20,48 @@ interface RevealProps {
 /**
  * The workhorse. opacity 0 → 1, y 24 → 0, 600ms, house easing.
  *
- * The CSS baseline is the *visible* state — the hidden state is applied by
- * Motion on mount, so if JS fails the content is still readable.
+ * The movement is a CSS transition driven by a data attribute rather than an
+ * inline style written by JS. The CSS baseline — no attribute — is the
+ * visible state, so content is readable both if JS never runs and if an
+ * animation is interrupted part-way through.
  */
 export function Reveal({
   children,
   y = 24,
   delay = 0,
   duration = DUR.base,
-  as = 'div',
+  as: Tag = 'div',
   className,
   margin = VIEWPORT.margin,
   once = true,
   id,
 }: RevealProps) {
   const canAnimate = useCanAnimate();
-  const MotionTag = motion[as as 'div'] ?? motion.div;
-
-  const variants: Variants = canAnimate
-    ? {
-        hidden: { opacity: 0, y },
-        show: {
-          opacity: 1,
-          y: 0,
-          transition: { duration, delay, ease: EASE.house },
-        },
-      }
-    : {
-        hidden: { opacity: 0 },
-        show: {
-          opacity: 1,
-          transition: { duration: DUR.micro, delay: 0, ease: EASE.house },
-        },
-      };
+  const { ref, state } = useReveal<HTMLDivElement>({ margin, once });
 
   return (
-    <MotionTag
+    <Tag
       id={id}
+      ref={ref}
       className={className}
-      variants={variants}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once, margin }}
+      data-reveal={state}
+      style={{
+        '--reveal-y': `${y}px`,
+        '--reveal-delay': `${canAnimate ? delay * 1000 : 0}ms`,
+        transitionDuration: `${canAnimate ? duration : DUR.micro}s`,
+      } as React.CSSProperties}
     >
       {children}
-    </MotionTag>
+    </Tag>
   );
 }
 
-/** Same trigger, but the parent orchestrates children via staggerChildren. */
+/** Orchestrates children on a stagger by handing each one a CSS delay. */
 export function RevealGroup({
   children,
-  interval = 0.09,
+  interval = STAGGER.card,
   delay = 0,
-  as = 'div',
+  as: Tag = 'div',
   className,
   margin = VIEWPORT.margin,
   id,
@@ -86,66 +74,46 @@ export function RevealGroup({
   margin?: string;
   id?: string;
 }) {
-  const canAnimate = useCanAnimate();
-  const MotionTag = motion[as as 'div'] ?? motion.div;
+  let index = 0;
+
+  const staggered = Children.map(children, (child) => {
+    if (!isValidElement(child)) return child;
+    // Stagger caps at 8; beyond that the ninth item would arrive after the
+    // reader has already scrolled past it.
+    const step = Math.min(index, STAGGER_CAP);
+    index += 1;
+    return cloneElement(child as React.ReactElement<{ _delay?: number; _margin?: string }>, {
+      _delay: delay + step * interval,
+      _margin: margin,
+    });
+  });
 
   return (
-    <MotionTag
-      id={id}
-      className={className}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, margin }}
-      variants={{
-        hidden: {},
-        show: {
-          transition: {
-            staggerChildren: canAnimate ? interval : 0,
-            delayChildren: canAnimate ? delay : 0,
-          },
-        },
-      }}
-    >
-      {children}
-    </MotionTag>
+    <Tag className={className} id={id}>
+      {staggered}
+    </Tag>
   );
 }
 
-/** A child of RevealGroup. Inherits the parent's stagger. */
+/** A child of RevealGroup. Receives its delay from the parent. */
 export function RevealItem({
   children,
   y = 24,
   as = 'div',
   className,
+  _delay = 0,
+  _margin = VIEWPORT.margin,
 }: {
   children: ReactNode;
   y?: number;
   as?: ElementType;
   className?: string;
+  _delay?: number;
+  _margin?: string;
 }) {
-  const canAnimate = useCanAnimate();
-  const MotionTag = motion[as as 'div'] ?? motion.div;
-
-  const variants: Variants = canAnimate
-    ? {
-        hidden: { opacity: 0, y },
-        show: {
-          opacity: 1,
-          y: 0,
-          transition: { duration: DUR.base, ease: EASE.house },
-        },
-      }
-    : {
-        hidden: { opacity: 0 },
-        show: {
-          opacity: 1,
-          transition: { duration: DUR.micro, ease: EASE.house },
-        },
-      };
-
   return (
-    <MotionTag className={className} variants={variants}>
+    <Reveal y={y} delay={_delay} as={as} className={className} margin={_margin}>
       {children}
-    </MotionTag>
+    </Reveal>
   );
 }

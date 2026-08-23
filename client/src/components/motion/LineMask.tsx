@@ -1,8 +1,65 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { motion } from 'motion/react';
-import type { ElementType } from 'react';
-import { DUR, EASE, STAGGER, VIEWPORT } from '@/motion/constants';
-import { useCanAnimate, useSettled } from '@/motion/guards';
+import { useEffect, useRef, useState, type CSSProperties, type ElementType } from 'react';
+import { DUR, STAGGER, VIEWPORT } from '@/motion/constants';
+import { useCanAnimate } from '@/motion/guards';
+import { useReveal } from '@/motion/useReveal';
+
+/**
+ * Splits text into rendered lines by measurement — never per character.
+ * Per-letter scrambles are the strongest generic-agency tell and cost far
+ * more in layout thrash.
+ */
+function useMeasuredLines(text: string, enabled: boolean) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const [lines, setLines] = useState<string[]>([text]);
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host || !enabled) {
+      setLines([text]);
+      return;
+    }
+
+    const measure = () => {
+      const width = host.clientWidth;
+      if (!width) return;
+
+      const probe = document.createElement('div');
+      const cs = getComputedStyle(host);
+      probe.style.cssText = `position:absolute;visibility:hidden;pointer-events:none;width:${width}px;font-family:${cs.fontFamily};font-size:${cs.fontSize};font-weight:${cs.fontWeight};line-height:${cs.lineHeight};letter-spacing:${cs.letterSpacing};text-transform:${cs.textTransform};`;
+
+      const words = text.split(/\s+/).filter(Boolean);
+      probe.innerHTML = words.map((w) => `<span>${w}</span>`).join(' ');
+      host.appendChild(probe);
+
+      const spans = Array.from(probe.querySelectorAll('span'));
+      const grouped: string[] = [];
+      let top: number | null = null;
+      let buffer: string[] = [];
+
+      spans.forEach((span, i) => {
+        const t = (span as HTMLElement).offsetTop;
+        if (top === null) top = t;
+        if (t !== top) {
+          grouped.push(buffer.join(' '));
+          buffer = [];
+          top = t;
+        }
+        buffer.push(words[i]);
+      });
+      if (buffer.length) grouped.push(buffer.join(' '));
+
+      host.removeChild(probe);
+      setLines(grouped.length ? grouped : [text]);
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(host);
+    return () => ro.disconnect();
+  }, [text, enabled]);
+
+  return { hostRef, lines };
+}
 
 interface LineMaskProps {
   text: string;
@@ -12,17 +69,19 @@ interface LineMaskProps {
   interval?: number;
   duration?: number;
   margin?: string;
-  /** Drive the animation from a parent variant instead of the viewport. */
+  /** Reveal on mount rather than on entering the viewport. */
   animateOnMount?: boolean;
   once?: boolean;
 }
 
 /**
- * Per-line text reveal. Lines are measured by a ResizeObserver-driven pass —
- * never split per character. Per-letter scrambles are the strongest generic
- * agency tell and cost far more in layout thrash.
+ * Per-line text reveal, driven by CSS transitions on a data attribute.
  *
- * Accessibility: the split spans are aria-hidden, and the original string is
+ * The baseline — no attribute — is the visible state. That is what keeps the
+ * text readable if JS never runs, and equally if a reveal is interrupted
+ * before it lands, which an inline-style animation cannot guarantee.
+ *
+ * Accessibility: the split spans are aria-hidden and the original string is
  * preserved in a visually-hidden node, so screen readers get unfragmented text.
  */
 export function LineMask({
@@ -37,118 +96,58 @@ export function LineMask({
   once = true,
 }: LineMaskProps) {
   const canAnimate = useCanAnimate();
-  const hostRef = useRef<HTMLDivElement>(null);
-  const [lines, setLines] = useState<string[] | null>(null);
+  const { hostRef, lines } = useMeasuredLines(text, canAnimate);
+  const { ref, state } = useReveal<HTMLDivElement>({
+    margin,
+    once,
+    onMount: animateOnMount,
+  });
   const Tag = as as ElementType;
 
-  // If a mount-driven reveal never lands, the text would stay hidden forever.
-  const settled = useSettled((delay + duration) * 1000 + 1200);
-
-  // Measure: render words, group by offsetTop, collapse back into lines.
-  useLayoutEffect(() => {
-    if (!canAnimate) return;
-    const host = hostRef.current;
-    if (!host) return;
-
-    const measure = () => {
-      const probe = document.createElement('div');
-      const cs = getComputedStyle(host);
-      probe.style.cssText = `position:absolute;visibility:hidden;pointer-events:none;width:${host.clientWidth}px;font:${cs.font};font-family:${cs.fontFamily};font-size:${cs.fontSize};font-weight:${cs.fontWeight};line-height:${cs.lineHeight};letter-spacing:${cs.letterSpacing};text-transform:${cs.textTransform};`;
-
-      const words = text.split(/\s+/).filter(Boolean);
-      probe.innerHTML = words.map((w) => `<span>${w}</span>`).join(' ');
-      host.appendChild(probe);
-
-      const spans = Array.from(probe.querySelectorAll('span'));
-      const grouped: string[] = [];
-      let currentTop: number | null = null;
-      let buffer: string[] = [];
-
-      spans.forEach((span, i) => {
-        const top = (span as HTMLElement).offsetTop;
-        if (currentTop === null) currentTop = top;
-        if (top !== currentTop) {
-          grouped.push(buffer.join(' '));
-          buffer = [];
-          currentTop = top;
-        }
-        buffer.push(words[i]);
-      });
-      if (buffer.length) grouped.push(buffer.join(' '));
-
-      host.removeChild(probe);
-      setLines(grouped.length ? grouped : [text]);
-    };
-
-    measure();
-
-    const ro = new ResizeObserver(() => measure());
-    ro.observe(host);
-    return () => ro.disconnect();
-  }, [text, canAnimate]);
-
-  // Reduced motion, or a mount animation that never completed.
-  if (!canAnimate || (animateOnMount && settled)) {
+  // Reduced motion: the whole block, no split, no movement.
+  if (!canAnimate) {
     return (
-      <motion.div
-        className={className}
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once, margin }}
-        transition={{ duration: DUR.micro, ease: EASE.house }}
-      >
+      <div className={className}>
         <Tag>{text}</Tag>
-      </motion.div>
+      </div>
     );
   }
 
-  const parentProps = animateOnMount
-    ? { initial: 'hidden' as const, animate: 'show' as const }
-    : {
-        initial: 'hidden' as const,
-        whileInView: 'show' as const,
-        viewport: { once, margin },
-      };
-
   return (
-    <div ref={hostRef} className={className}>
+    <div
+      ref={(node: HTMLDivElement | null) => {
+        hostRef.current = node;
+        ref.current = node;
+      }}
+      className={className}
+    >
       <span className="u-vh">{text}</span>
-      <motion.span
-        aria-hidden="true"
-        style={{ display: 'block' }}
-        variants={{
-          hidden: {},
-          show: { transition: { staggerChildren: interval, delayChildren: delay } },
-        }}
-        {...parentProps}
-      >
-        {(lines ?? [text]).map((line, i) => (
-          <span
-            key={`${line}-${i}`}
-            style={{ display: 'block', overflow: 'hidden', paddingBottom: '0.06em' }}
-          >
-            <motion.span
-              style={{ display: 'block', willChange: 'transform' }}
-              variants={{
-                hidden: { y: '110%' },
-                show: {
-                  y: '0%',
-                  transition: { duration, ease: EASE.house },
-                },
-              }}
+      <Tag aria-hidden="true" data-lines={state} style={{ display: 'block' }}>
+        {lines.map((line, i) => (
+          <span key={`${line}-${i}`}>
+            <span
+              style={
+                {
+                  transitionDuration: `${duration}s`,
+                  transitionDelay: `${(delay + i * interval) * 1000}ms`,
+                } as CSSProperties
+              }
             >
-              <Tag style={{ display: 'block' }}>{line}</Tag>
-            </motion.span>
+              {line}
+            </span>
           </span>
         ))}
-      </motion.span>
+      </Tag>
     </div>
   );
 }
 
 /**
- * A line-masked block that takes its animation state from a parent variant
- * tree — used inside the hero, where chapter boundaries drive the reveal.
+ * A line-masked block whose state is driven by a parent rather than by the
+ * viewport — used in the hero, where chapter boundaries drive the reveal.
+ *
+ * Incoming masks UP and outgoing masks DOWN. Opposing directions are what
+ * make a boundary read as a page turn rather than a slideshow.
  */
 export function LineMaskControlled({
   text,
@@ -162,75 +161,37 @@ export function LineMaskControlled({
   interval?: number;
 }) {
   const canAnimate = useCanAnimate();
-  const [lines, setLines] = useState<string[]>([text]);
-  const hostRef = useRef<HTMLDivElement>(null);
-  const settled = useSettled(2400);
+  const { hostRef, lines } = useMeasuredLines(text, canAnimate);
+  const [entered, setEntered] = useState(false);
 
   useEffect(() => {
-    const host = hostRef.current;
-    if (!host || !canAnimate) return;
+    if (!canAnimate) return;
+    const id = requestAnimationFrame(() => setEntered(true));
+    return () => cancelAnimationFrame(id);
+  }, [canAnimate]);
 
-    const measure = () => {
-      const probe = document.createElement('div');
-      const cs = getComputedStyle(host);
-      probe.style.cssText = `position:absolute;visibility:hidden;pointer-events:none;width:${host.clientWidth}px;font-family:${cs.fontFamily};font-size:${cs.fontSize};font-weight:${cs.fontWeight};line-height:${cs.lineHeight};letter-spacing:${cs.letterSpacing};`;
-      const words = text.split(/\s+/).filter(Boolean);
-      probe.innerHTML = words.map((w) => `<span>${w}</span>`).join(' ');
-      host.appendChild(probe);
-
-      const spans = Array.from(probe.querySelectorAll('span'));
-      const grouped: string[] = [];
-      let top: number | null = null;
-      let buf: string[] = [];
-      spans.forEach((s, i) => {
-        const t = (s as HTMLElement).offsetTop;
-        if (top === null) top = t;
-        if (t !== top) {
-          grouped.push(buf.join(' '));
-          buf = [];
-          top = t;
-        }
-        buf.push(words[i]);
-      });
-      if (buf.length) grouped.push(buf.join(' '));
-      host.removeChild(probe);
-      setLines(grouped.length ? grouped : [text]);
-    };
-
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(host);
-    return () => ro.disconnect();
-  }, [text, canAnimate]);
-
-  // Same guard: once the reveal has had its full run, render the final state
-  // outright rather than trusting the animation to have landed.
-  if (!canAnimate || (settled && state === 'in')) {
+  if (!canAnimate) {
     return <div className={className}>{text}</div>;
   }
+
+  const shown = state === 'in' && entered;
 
   return (
     <div ref={hostRef} className={className}>
       <span className="u-vh">{text}</span>
-      <span aria-hidden="true" style={{ display: 'block' }}>
+      <span aria-hidden="true" data-lines={shown ? 'shown' : 'hidden'} style={{ display: 'block' }}>
         {lines.map((line, i) => (
-          <span key={`${line}-${i}`} style={{ display: 'block', overflow: 'hidden' }}>
-            <motion.span
-              style={{ display: 'block', willChange: 'transform' }}
-              initial={{ y: '110%' }}
-              animate={{
-                // Incoming masks UP, outgoing masks DOWN — opposing directions
-                // are what make a boundary read as a page turn, not a fade.
-                y: state === 'in' ? '0%' : '110%',
-              }}
-              transition={{
-                duration: DUR.base,
-                delay: state === 'in' ? i * interval : 0,
-                ease: (state === 'in' ? EASE.house : EASE.exit),
-              }}
+          <span key={`${line}-${i}`}>
+            <span
+              style={
+                {
+                  transitionDuration: `${DUR.base}s`,
+                  transitionDelay: `${state === 'in' ? i * interval * 1000 : 0}ms`,
+                } as CSSProperties
+              }
             >
               {line}
-            </motion.span>
+            </span>
           </span>
         ))}
       </span>

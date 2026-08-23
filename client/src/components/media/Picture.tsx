@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { motion } from 'motion/react';
-import { DUR, EASE } from '@/motion/constants';
+import { DUR } from '@/motion/constants';
 
 const WIDTHS = [400, 800, 1200, 1600, 2400];
 
@@ -22,6 +21,11 @@ export interface PictureProps {
  * placeholder, intrinsic dimensions reserved via aspect-ratio, and a
  * priority flag.
  *
+ * The fade-in is a CSS transition on a plain <img> rather than a motion
+ * value. An image is the one thing on the page that must never depend on an
+ * animation frame to become visible — a JS-driven opacity that stalls leaves
+ * the whole page black.
+ *
  * Admin-uploaded images run the same transforms at request time and land on
  * the same contract, so this component never needs to know the difference.
  */
@@ -36,16 +40,23 @@ export function Picture({
   objectPosition = 'center',
 }: PictureProps) {
   const [loaded, setLoaded] = useState(false);
+  // An image that was already decoded at first paint should not fade at all.
+  // Fading it means its visibility depends on a transition completing, and a
+  // transition that never runs leaves the picture invisible.
+  const [instant, setInstant] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   /**
    * A cached image is already `complete` before React attaches onLoad, so the
-   * event never fires and the picture would sit at opacity 0 forever. Every
-   * warm-cache visit hit this. Check the element directly on mount.
+   * event never fires. Every warm-cache visit hit this. Check the element
+   * directly on mount.
    */
   useEffect(() => {
     const img = imgRef.current;
-    if (img?.complete && img.naturalWidth > 0) setLoaded(true);
+    if (img?.complete && img.naturalWidth > 0) {
+      setInstant(true);
+      setLoaded(true);
+    }
   }, [src]);
 
   const url = (w: number, q = 78) => {
@@ -67,10 +78,10 @@ export function Picture({
         style={{
           background: 'linear-gradient(150deg, var(--color-ash-2), var(--color-ash))',
           opacity: loaded ? 0 : 1,
-          transition: `opacity ${DUR.base}s var(--ease-house)`,
+          transition: instant ? 'none' : `opacity ${DUR.base}s var(--ease-house)`,
         }}
       />
-      <motion.img
+      <img
         ref={imgRef}
         src={url(1600)}
         srcSet={srcSet}
@@ -83,9 +94,6 @@ export function Picture({
         fetchPriority={priority ? 'high' : 'auto'}
         onLoad={() => setLoaded(true)}
         onError={() => setLoaded(true)}
-        initial={false}
-        animate={{ opacity: loaded ? 1 : 0 }}
-        transition={{ duration: DUR.base, ease: EASE.house }}
         style={{
           position: 'absolute',
           inset: 0,
@@ -93,6 +101,8 @@ export function Picture({
           height: '100%',
           objectFit: 'cover',
           objectPosition,
+          opacity: loaded ? 1 : 0,
+          transition: instant ? 'none' : `opacity ${DUR.base}s var(--ease-house)`,
         }}
       />
     </div>

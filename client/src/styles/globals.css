@@ -555,3 +555,90 @@ select.field__control {
     display: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   CSS-driven reveals.
+
+   The baseline — no data attribute at all — is the VISIBLE state. JS adds
+   `hidden` on mount only when it can actually animate, then flips to
+   `shown` when the element is observed entering the viewport.
+
+   These are CSS transitions rather than JS-applied inline styles on
+   purpose. A JS animation that is interrupted mid-flight leaves a stale
+   inline transform behind and the content stays invisible permanently; a
+   CSS transition always resolves to its final computed value on the next
+   repaint. That difference is the whole reason animated content here stays
+   readable when the animation cannot run.
+   ═══════════════════════════════════════════════════════════════════ */
+
+[data-reveal] {
+  transition:
+    opacity var(--duration-base) var(--ease-house),
+    transform var(--duration-base) var(--ease-house);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+[data-reveal='hidden'] {
+  opacity: 0;
+  transform: translateY(var(--reveal-y, 24px));
+}
+[data-reveal='shown'] {
+  opacity: 1;
+  transform: none;
+}
+
+[data-curtain] {
+  transition: clip-path var(--duration-cine) var(--ease-house);
+  transition-delay: var(--reveal-delay, 0ms);
+  overflow: hidden;
+  will-change: clip-path;
+}
+[data-curtain='hidden'] {
+  clip-path: var(--curtain-from, inset(0 0 100% 0));
+}
+[data-curtain='shown'] {
+  clip-path: inset(0 0 0 0);
+}
+
+[data-curtain-inner] {
+  transition: transform var(--duration-cine) var(--ease-house);
+  transition-delay: var(--reveal-delay, 0ms);
+  height: 100%;
+}
+[data-curtain='hidden'] > [data-curtain-inner] {
+  transform: scale(var(--curtain-scale, 1.08));
+}
+[data-curtain='shown'] > [data-curtain-inner] {
+  transform: none;
+}
+
+/* Per-line text reveal */
+[data-lines] > span {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.06em;
+}
+[data-lines] > span > span {
+  display: block;
+  transition: transform var(--duration-base) var(--ease-house);
+  will-change: transform;
+}
+[data-lines='hidden'] > span > span {
+  transform: translateY(110%);
+}
+[data-lines='shown'] > span > span {
+  transform: none;
+}
+
+/* Motion off: no movement, only a short fade. */
+.motion-off [data-reveal],
+.motion-off [data-curtain],
+.motion-off [data-curtain-inner],
+.motion-off [data-lines] > span > span {
+  transition-duration: var(--duration-micro);
+  transition-delay: 0ms;
+  transform: none !important;
+  clip-path: none !important;
+}
+.motion-off [data-reveal='hidden'] {
+  opacity: 0;
+}
