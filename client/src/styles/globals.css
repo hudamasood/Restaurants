@@ -270,6 +270,20 @@ ol {
 }
 .motion-off .stage-pin {
   position: relative;
+  /* Every StickyStage consumer (Hero, StationRail, ExperienceRail, the
+     still-room families) paints its actual content as absolutely
+     positioned layers with no sibling in normal flow, because that content
+     is designed to fill one pinned 100svh frame. Collapsing this to
+     `height: auto` with no minimum left nothing in flow to derive a height
+     from, so the frame silently sized to zero — every pinned section on
+     the site rendered as an invisible sliver, with only whatever happened
+     to overflow visible, stacked on top of the next section at the same
+     position. A user with the OS-level "reduce motion" setting on hits
+     this by default, with no toggle involved.
+     A real minimum height turns each frame back into what it always was
+     designed to degrade to: one full-height static block, stacked
+     normally instead of pinned. */
+  min-height: 100svh;
   height: auto;
   overflow: visible;
 }
