@@ -25,8 +25,12 @@ export function SignatureChapters() {
 
   return (
     <section id="signatures" className="relative">
-      {/* Counter ticks as each chapter passes 50% viewport */}
-      <div className="pointer-events-none sticky top-0 z-20 hidden lg:block">
+      {/* Counter ticks as each chapter passes 50% viewport.
+          Height is zero on purpose: a sticky element is still in normal flow,
+          so without this the counter reserved a band of empty layout space
+          between the station rail and the first chapter. Its content
+          overflows the zero-height box and is positioned by padding. */}
+      <div className="pointer-events-none sticky top-0 z-20 hidden h-0 lg:block">
         <div className="u-shell flex justify-end" style={{ paddingTop: 'calc(var(--nav-h) + 2rem)' }}>
           <div className="u-num flex items-center gap-3" style={{ fontSize: 'var(--t-label)', letterSpacing: '0.18em' }}>
             <motion.span
