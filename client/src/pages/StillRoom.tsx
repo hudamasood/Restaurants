@@ -63,7 +63,9 @@ export default function StillRoom() {
           heightTablet={130}
           mobile={<FamilyMobile family={family} index={i} />}
         >
-          {(progress) => <FamilyStage family={family} index={i} progress={progress} />}
+          {(progress, enabled) => (
+            <FamilyStage family={family} index={i} progress={progress} enabled={enabled} />
+          )}
         </StickyStage>
       ))}
 
@@ -164,20 +166,41 @@ function FamilyStage({
   family,
   index,
   progress,
+  enabled,
 }: {
   family: (typeof DRINK_FAMILIES)[number];
   index: number;
   progress: MotionValue<number>;
+  enabled: boolean;
 }) {
   const y = useTransform(progress, [0, 1], ['0%', '-10%']);
-  const opacity = useTransform(progress, [0, 0.15, 0.85, 1], [0.4, 1, 1, 0.4]);
+  const textOpacity = useTransform(progress, [0, 0.15, 0.85, 1], [0.4, 1, 1, 0.4]);
+
+  /**
+   * Each family is its own pinned stage stacked directly beneath the last,
+   * so without this the image is at full brightness from the very first
+   * frame — a hard cut against the section it follows, and against the
+   * next family when this one releases. Cross-dissolving the image itself
+   * in and out at the edges of its own scroll range turns every boundary
+   * (header → family, family → family, family → the list below) into the
+   * same kind of dissolve the hero uses between its chapters, rather than
+   * a seam. The page background is --color-ink, so at opacity 0 the frame
+   * reads as pure black, matching the dark ground on both sides of it.
+   */
+  const dissolve = useTransform(progress, [0, 0.08, 0.92, 1], [0, 1, 1, 0]);
+  // Reduced motion supplies a MotionValue frozen at 0, which would otherwise
+  // pin the image invisible and the text at 40% forever.
+  const imageOpacity = enabled ? dissolve : 1;
+  const opacity = enabled ? textOpacity : 1;
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
-      <motion.div className="h-[112%] w-full" style={{ y }}>
-        <Picture src={family.image} alt="" className="h-full w-full" sizes="100vw" />
+    <div className="relative h-full w-full overflow-hidden" style={{ background: 'var(--color-ink)' }}>
+      <motion.div className="absolute inset-0" style={{ opacity: imageOpacity }}>
+        <motion.div className="h-[112%] w-full" style={enabled ? { y } : undefined}>
+          <Picture src={family.image} alt="" className="h-full w-full" sizes="100vw" />
+        </motion.div>
+        <div className="u-scrim-left" />
       </motion.div>
-      <div className="u-scrim-left" />
 
       <motion.div
         className="absolute inset-0 flex items-center"
