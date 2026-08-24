@@ -48,8 +48,6 @@ function HeroStage({
 
   // Parallax inside the mask — the image moves, never the container.
   const imageY = useTransform(progress, [0, 1], ['0%', '-8%']);
-  // Bottom-edge peek: the next section rises to 80px visible from p 0.85.
-  const peekY = useTransform(progress, [0.85, 1], ['100%', 'calc(100% - 80px)']);
 
   return (
     <div className="u-grain relative h-full w-full overflow-hidden">
@@ -170,17 +168,6 @@ function HeroStage({
         </div>
       </div>
 
-      {/* Bottom-edge peek — costs nothing, signals depth */}
-      {enabled && (
-        <motion.div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[30vh]"
-          style={{ y: peekY }}
-        >
-          <Picture src={HERO_CHAPTERS[0].image} alt="" className="h-full w-full" />
-          <div className="u-scrim-full" />
-        </motion.div>
-      )}
     </div>
   );
 }
