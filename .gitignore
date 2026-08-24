@@ -12,3 +12,6 @@ npm-debug.log*
 .idea/
 .vscode/
 coverage/
+
+# Editor / assistant local config
+.claude/
