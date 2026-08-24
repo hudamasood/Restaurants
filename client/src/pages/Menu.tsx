@@ -1,115 +1,131 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { PageShell } from '@/components/layout/PageShell';
 import { DishCard } from '@/components/sections/menu/DishCard';
 import { DishQuickView } from '@/components/sections/menu/DishQuickView';
+import { CategoryNav } from '@/components/sections/menu/CategoryNav';
+import { RefineControl } from '@/components/sections/menu/RefineControl';
 import { Reveal } from '@/components/motion/Reveal';
 import { LineMask } from '@/components/motion/LineMask';
 import { DUR, EASE } from '@/motion/constants';
-import { useCanAnimate, useMotionState } from '@/motion/guards';
+import { useCanAnimate } from '@/motion/guards';
 import { useEscape, useScrollLock } from '@/app/overlay';
 import { useFlip } from '@/lib/flip';
-import { COURSES, DISHES, STATIONS, dishBySlug } from '@/data/menu';
-import type { Dish } from '@/types';
-
-const DIETARY = [
-  { id: 'vegetarian', label: 'Vegetarian' },
-  { id: 'vegan', label: 'Vegan' },
-  { id: 'glutenFree', label: 'Gluten-free' },
-  { id: 'finned', label: 'Finned fish' },
-  { id: 'shellfish', label: 'Shellfish' },
-  { id: 'signature', label: 'Signature' },
-  { id: 'share', label: 'To share' },
-] as const;
-
-function matchesDietary(dish: Dish, id: string): boolean {
-  switch (id) {
-    case 'vegetarian':
-      return dish.dietary.vegetarian;
-    case 'vegan':
-      return dish.dietary.vegan;
-    case 'glutenFree':
-      return dish.dietary.glutenFree;
-    case 'finned':
-      return dish.dietary.seafoodClass === 'finned';
-    case 'shellfish':
-      return dish.dietary.seafoodClass === 'shellfish';
-    case 'signature':
-      return dish.isSignature;
-    case 'share':
-      return Boolean(dish.isShared);
-    default:
-      return true;
-  }
-}
+import {
+  DEFAULT_CATEGORY,
+  EMPTY_QUERY,
+  activeRefineCount,
+  categoryById,
+  courseLabel,
+  coursesInCategory,
+  dietaryLabel,
+  filterDishes,
+  parseMenuQuery,
+  reconcileQuery,
+  writeMenuQuery,
+} from '@/lib/menuFilter';
+import type { CategoryId, DietaryId, MenuQuery } from '@/lib/menuFilter';
+import { DISHES, dishBySlug } from '@/data/menu';
+import type { CourseId, Dish } from '@/types';
 
 export default function Menu() {
   const [params, setParams] = useSearchParams();
-  const { isMobile } = useMotionState();
   const canAnimate = useCanAnimate();
-  const [sheetOpen, setSheetOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [query, setQuery] = useState(params.get('q') ?? '');
+  const [search, setSearch] = useState(params.get('q') ?? '');
 
-  // Filters live in the URL, so the state is deep-linkable and shareable.
-  const stations = params.getAll('station');
-  const courses = params.getAll('course');
-  const diets = params.getAll('diet');
+  const barRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+
   const quickSlug = params.get('dish');
 
-  // On mobile, filters are staged and applied on sheet dismiss, so the FLIP
-  // plays on a visible grid rather than under a covering sheet.
-  const [staged, setStaged] = useState({ stations, courses, diets });
-  useEffect(() => {
-    if (!sheetOpen) setStaged({ stations, courses, diets });
+  /**
+   * Filters live in the URL so the state stays shareable. Parsing validates
+   * every value, and reconciling drops anything that cannot apply to the
+   * active category — so a category switch can never leave a stale sub-group
+   * or an impossible course behind.
+   */
+  const query = useMemo(() => {
+    const parsed = parseMenuQuery(params);
+    return reconcileQuery(DISHES, parsed);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sheetOpen, params.toString()]);
+  }, [params.toString()]);
 
-  const toggle = useCallback(
-    (key: 'station' | 'course' | 'diet', value: string) => {
-      const next = new URLSearchParams(params);
-      const current = next.getAll(key);
-      next.delete(key);
-      const updated = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
-      updated.forEach((v) => next.append(key, v));
-      setParams(next, { replace: true });
+  const effective = useMemo<MenuQuery>(
+    () => ({ ...query, search }),
+    [query, search],
+  );
+
+  const results = useMemo(() => filterDishes(DISHES, effective), [effective]);
+
+  const availableCourses = useMemo(
+    () => coursesInCategory(DISHES, query.category),
+    [query.category],
+  );
+
+  const commit = useCallback(
+    (next: MenuQuery) => {
+      const reconciled = reconcileQuery(DISHES, next);
+      setParams(writeMenuQuery(params, reconciled), { replace: true });
     },
     [params, setParams],
   );
 
-  const clearAll = useCallback(() => {
-    const next = new URLSearchParams(params);
-    next.delete('station');
-    next.delete('course');
-    next.delete('diet');
-    setParams(next, { replace: true });
-  }, [params, setParams]);
-
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return DISHES.filter((d) => {
-      if (!d.isAvailable) return false;
-      // Multi-select within a group, AND across groups.
-      if (stations.length && !stations.includes(d.station)) return false;
-      if (courses.length && !courses.includes(d.course)) return false;
-      if (diets.length && !diets.every((id) => matchesDietary(d, id))) return false;
-      if (q) {
-        const haystack = `${d.name} ${d.description} ${d.ingredients.join(' ')}`.toLowerCase();
-        if (!haystack.includes(q)) return false;
-      }
-      return true;
+  /** Puts the top of the grid just under the two sticky bars. */
+  const scrollToResults = useCallback(() => {
+    const target = resultsRef.current;
+    if (!target) return;
+    const navH = Number.parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--nav-h'),
+    );
+    const offset = (barRef.current?.offsetHeight ?? 0) + (navH || 88) + 16;
+    const top = target.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({
+      top: Math.max(0, top),
+      behavior: canAnimate ? 'smooth' : 'auto',
     });
-  }, [stations.join(), courses.join(), diets.join(), query]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [canAnimate]);
 
-  const gridRef = useFlip(
-    results.map((d) => d.id),
-    canAnimate,
+  const selectCategory = useCallback(
+    (category: CategoryId, subGroup: CourseId | null) => {
+      commit({ ...query, category, subGroup });
+      // The grid is one list, so the category "section" is brought to the top
+      // of the viewport rather than jumped to as a separate anchor.
+      requestAnimationFrame(scrollToResults);
+    },
+    [commit, query, scrollToResults],
   );
 
-  const activeCount = stations.length + courses.length + diets.length;
+  const toggleCourse = useCallback(
+    (id: CourseId) => {
+      const courses = query.courses.includes(id)
+        ? query.courses.filter((c) => c !== id)
+        : [...query.courses, id];
+      commit({ ...query, courses });
+    },
+    [commit, query],
+  );
+
+  const toggleDiet = useCallback(
+    (id: DietaryId) => {
+      const diets = query.diets.includes(id)
+        ? query.diets.filter((d) => d !== id)
+        : [...query.diets, id];
+      commit({ ...query, diets });
+    },
+    [commit, query],
+  );
+
+  const clearRefine = useCallback(() => {
+    commit({ ...query, courses: [], diets: [] });
+  }, [commit, query]);
+
+  const clearAll = useCallback(() => {
+    commit({ ...EMPTY_QUERY, search: query.search });
+    setSearch('');
+  }, [commit, query.search]);
+
   const quickDish = quickSlug ? (dishBySlug(quickSlug) ?? null) : null;
 
   const openQuickView = (dish: Dish) => {
@@ -123,6 +139,11 @@ export default function Menu() {
     next.delete('dish');
     setParams(next);
   };
+
+  const gridRef = useFlip(
+    results.map((d) => d.id),
+    canAnimate,
+  );
 
   // "/" opens search
   useEffect(() => {
@@ -139,15 +160,21 @@ export default function Menu() {
   // A readable sentence of the current filter state.
   const summary = useMemo(() => {
     const bits: string[] = [];
-    if (stations.length)
-      bits.push(stations.map((s) => STATIONS.find((x) => x.id === s)?.name ?? s).join(', '));
-    if (courses.length)
-      bits.push(courses.map((c) => COURSES.find((x) => x.id === c)?.name ?? c).join(', '));
-    if (diets.length)
-      bits.push(diets.map((d) => DIETARY.find((x) => x.id === d)?.label ?? d).join(', '));
+    const cat = categoryById(query.category);
+    if (query.category !== DEFAULT_CATEGORY) {
+      const sub = query.subGroup
+        ? cat.subGroups?.find((s) => s.id === query.subGroup)
+        : undefined;
+      bits.push(sub ? `${cat.label} · ${sub.label}` : cat.label);
+    }
+    if (query.courses.length) bits.push(query.courses.map(courseLabel).join(', '));
+    if (query.diets.length) bits.push(query.diets.map(dietaryLabel).join(', '));
     if (!bits.length) return 'Fifty-six dishes across three kitchens and the still room.';
     return `Showing ${bits.join(' · ')}.`;
-  }, [stations.join(), courses.join(), diets.join()]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [query]);
+
+  const refineCount = activeRefineCount(query);
+  const anythingActive = refineCount > 0 || query.category !== DEFAULT_CATEGORY;
 
   return (
     <PageShell
@@ -169,92 +196,96 @@ export default function Menu() {
         </div>
       </header>
 
-      {/* Filter bar — sticky beneath the nav from scroll position 0 */}
+      {/*
+        Browse bar — category navigation with the refine control alongside it.
+        Solid ground, not translucent: it sits over dish photography for the
+        whole scroll and must never let an image read through it.
+      */}
       <div
+        ref={barRef}
         className="sticky z-40"
         style={{
           top: 'var(--nav-h)',
-          background: 'rgb(11 11 12 / 0.94)',
-          backdropFilter: 'blur(12px)',
+          background: 'var(--color-ink)',
           borderTop: '1px solid var(--color-smoke)',
           borderBottom: '1px solid var(--color-smoke)',
         }}
       >
-        <div className="u-shell">
-          {isMobile ? (
-            <div className="flex items-center justify-between gap-4 py-4">
-              <button
-                type="button"
-                onClick={() => setSheetOpen(true)}
-                className="u-mono"
-                style={{ color: 'var(--color-bone)' }}
-              >
-                Filters {activeCount > 0 && `(${activeCount})`}
-              </button>
-              <button
-                type="button"
-                onClick={() => setSearchOpen(true)}
-                className="u-mono"
-                style={{ color: 'var(--color-bone-dim)' }}
-              >
-                Search
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-3 py-4">
-              <FilterGroup
-                label="Station"
-                options={STATIONS.map((s) => ({ id: s.id, label: s.name }))}
-                active={stations}
-                onToggle={(v) => toggle('station', v)}
-              />
-              <FilterGroup
-                label="Course"
-                options={COURSES.map((c) => ({ id: c.id, label: c.name }))}
-                active={courses}
-                onToggle={(v) => toggle('course', v)}
-              />
-              <FilterGroup
-                label="Dietary"
-                options={DIETARY.map((d) => ({ id: d.id, label: d.label }))}
-                active={diets}
-                onToggle={(v) => toggle('diet', v)}
-              />
-              <button
-                type="button"
-                onClick={() => setSearchOpen(true)}
-                className="u-mono ml-auto"
-                style={{ color: 'var(--color-bone-faint)' }}
-              >
-                Search <span style={{ opacity: 0.6 }}>/</span>
-              </button>
-            </div>
-          )}
+        {/*
+          Below 768px the two controls stack, so the category nav keeps the
+          full width to scroll in and the refine control is never squeezed.
+          768px is also where `isMobile` flips the refine panel to a sheet, so
+          the layout and the behaviour change at the same breakpoint.
+        */}
+        <div className="u-shell flex flex-col md:flex-row md:items-center md:gap-6">
+          <div className="min-w-0 md:flex-1">
+            <CategoryNav
+              category={query.category}
+              subGroup={query.subGroup}
+              onSelect={selectCategory}
+            />
+          </div>
+
+          <div
+            className="flex shrink-0 items-center justify-between gap-4 border-t pb-3 pt-3 md:border-t-0 md:pb-0 md:pt-0"
+            style={{ borderColor: 'var(--color-smoke)' }}
+          >
+            <RefineControl
+              query={query}
+              availableCourses={availableCourses}
+              onToggleCourse={toggleCourse}
+              onToggleDiet={toggleDiet}
+              onClear={clearRefine}
+            />
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="u-mono"
+              style={{ color: 'var(--color-bone-faint)' }}
+            >
+              Search <span className="hidden md:inline" style={{ opacity: 0.6 }}>/</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Result count + active chips */}
-      <div className="u-shell pt-8">
+      {/* Result count + active refinements */}
+      <div ref={resultsRef} className="u-shell pt-8">
         <div className="mb-8 flex flex-wrap items-center gap-3">
-          <p className="u-num" style={{ color: 'var(--color-bone-faint)', fontSize: 'var(--t-label)', letterSpacing: '0.16em' }}>
-            {String(results.length).padStart(2, '0')} {results.length === 1 ? 'dish' : 'dishes'}
+          <p
+            className="u-num"
+            style={{
+              color: 'var(--color-bone-faint)',
+              fontSize: 'var(--t-label)',
+              letterSpacing: '0.16em',
+            }}
+          >
+            {String(results.length).padStart(2, '0')}{' '}
+            {results.length === 1 ? 'dish' : 'dishes'}
           </p>
 
           <AnimatePresence mode="popLayout">
             {[
-              ...stations.map((v) => ({ key: 'station' as const, v, label: STATIONS.find((s) => s.id === v)?.name ?? v })),
-              ...courses.map((v) => ({ key: 'course' as const, v, label: COURSES.find((c) => c.id === v)?.name ?? v })),
-              ...diets.map((v) => ({ key: 'diet' as const, v, label: DIETARY.find((d) => d.id === v)?.label ?? v })),
+              ...query.courses.map((v) => ({
+                key: `course-${v}`,
+                label: courseLabel(v),
+                remove: () => toggleCourse(v),
+              })),
+              ...query.diets.map((v) => ({
+                key: `diet-${v}`,
+                label: dietaryLabel(v),
+                remove: () => toggleDiet(v),
+              })),
             ].map((chip) => (
               <motion.button
-                key={`${chip.key}-${chip.v}`}
+                key={chip.key}
                 type="button"
                 layout
                 initial={{ opacity: 0, scale: 0.94 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.94 }}
                 transition={{ duration: DUR.short, ease: EASE.house }}
-                onClick={() => toggle(chip.key, chip.v)}
+                onClick={chip.remove}
                 className="u-mono flex items-center gap-2 px-3 py-1.5"
                 style={{ border: '1px solid var(--color-bone-ghost)', color: 'var(--color-bone)' }}
               >
@@ -267,8 +298,13 @@ export default function Menu() {
             ))}
           </AnimatePresence>
 
-          {activeCount > 0 && (
-            <button type="button" onClick={clearAll} className="u-mono" style={{ color: 'var(--color-bone-faint)' }}>
+          {anythingActive && (
+            <button
+              type="button"
+              onClick={clearAll}
+              className="u-mono"
+              style={{ color: 'var(--color-bone-faint)' }}
+            >
               Clear all
             </button>
           )}
@@ -278,12 +314,9 @@ export default function Menu() {
       {/* Grid */}
       <div className="u-shell pb-24">
         {results.length === 0 ? (
-          <EmptyState onClear={clearAll} query={query} onClearQuery={() => setQuery('')} />
+          <EmptyState onClear={clearAll} query={search} onClearQuery={() => setSearch('')} />
         ) : (
-          <div
-            ref={gridRef}
-            className="grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3"
-          >
+          <div ref={gridRef} className="grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
             {results.map((dish) => (
               <div key={dish.id} data-flip-key={dish.id}>
                 <DishCard dish={dish} onQuickView={openQuickView} />
@@ -331,28 +364,10 @@ export default function Menu() {
 
       <DishQuickView dish={quickDish} onClose={closeQuickView} />
 
-      <FilterSheet
-        open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        staged={staged}
-        setStaged={setStaged}
-        onApply={(next) => {
-          const p = new URLSearchParams(params);
-          p.delete('station');
-          p.delete('course');
-          p.delete('diet');
-          next.stations.forEach((v) => p.append('station', v));
-          next.courses.forEach((v) => p.append('course', v));
-          next.diets.forEach((v) => p.append('diet', v));
-          setParams(p, { replace: true });
-          setSheetOpen(false);
-        }}
-      />
-
       <SearchOverlay
         open={searchOpen}
-        query={query}
-        setQuery={setQuery}
+        query={search}
+        setQuery={setSearch}
         onClose={() => setSearchOpen(false)}
         results={results}
         onSelect={(d) => {
@@ -362,48 +377,6 @@ export default function Menu() {
         }}
       />
     </PageShell>
-  );
-}
-
-function FilterGroup({
-  label,
-  options,
-  active,
-  onToggle,
-}: {
-  label: string;
-  options: { id: string; label: string }[];
-  active: string[];
-  onToggle: (v: string) => void;
-}) {
-  return (
-    <div className="flex items-center gap-4">
-      <span className="u-mono shrink-0" style={{ color: 'var(--color-bone-ghost)' }}>
-        {label}
-      </span>
-      <div className="flex flex-wrap gap-x-4 gap-y-1">
-        {options.map((o) => {
-          const on = active.includes(o.id);
-          return (
-            <button
-              key={o.id}
-              type="button"
-              onClick={() => onToggle(o.id)}
-              aria-pressed={on}
-              className="u-mono link-rule"
-              style={{
-                color: on ? 'var(--color-bone)' : 'var(--color-bone-dim)',
-                transition: `color ${DUR.short}s var(--ease-house)`,
-              }}
-            >
-              <span className="link-rule" data-active={on}>
-                {o.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
   );
 }
 
@@ -437,119 +410,6 @@ function EmptyState({
         </button>
       </div>
     </Reveal>
-  );
-}
-
-type Staged = { stations: string[]; courses: string[]; diets: string[] };
-
-function FilterSheet({
-  open,
-  onClose,
-  staged,
-  setStaged,
-  onApply,
-}: {
-  open: boolean;
-  onClose: () => void;
-  staged: Staged;
-  setStaged: (s: Staged) => void;
-  onApply: (s: Staged) => void;
-}) {
-  useScrollLock(open, 'filters');
-  useEscape(open, onClose);
-  const canAnimate = useCanAnimate();
-
-  const toggleIn = (key: keyof Staged, value: string) => {
-    const list = staged[key];
-    setStaged({
-      ...staged,
-      [key]: list.includes(value) ? list.filter((v) => v !== value) : [...list, value],
-    });
-  };
-
-  return (
-    <AnimatePresence>
-      {open && (
-        <div className="fixed inset-0 z-[110] flex items-end">
-          <motion.button
-            type="button"
-            aria-label="Close filters"
-            className="absolute inset-0"
-            style={{ background: 'rgb(11 11 12 / 0.8)' }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            onClick={onClose}
-          />
-
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Filters"
-            className="relative max-h-[86svh] w-full overflow-y-auto"
-            style={{ background: 'var(--color-ash)', borderTop: '1px solid var(--color-smoke)' }}
-            initial={canAnimate ? { y: '100%' } : { opacity: 0 }}
-            animate={canAnimate ? { y: 0 } : { opacity: 1 }}
-            exit={canAnimate ? { y: '100%' } : { opacity: 0 }}
-            transition={{ duration: DUR.short, ease: EASE.house }}
-          >
-            <div className="u-shell py-8">
-              <h2 className="u-mono mb-8" style={{ color: 'var(--color-bone-faint)' }}>
-                Filters
-              </h2>
-
-              {[
-                { key: 'stations' as const, label: 'Station', options: STATIONS.map((s) => ({ id: s.id, label: s.name })) },
-                { key: 'courses' as const, label: 'Course', options: COURSES.map((c) => ({ id: c.id, label: c.name })) },
-                { key: 'diets' as const, label: 'Dietary', options: DIETARY.map((d) => ({ id: d.id, label: d.label })) },
-              ].map((group) => (
-                <div key={group.key} className="mb-8">
-                  <p className="u-mono mb-4" style={{ color: 'var(--color-bone-ghost)' }}>
-                    {group.label}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {group.options.map((o) => {
-                      const on = staged[group.key].includes(o.id);
-                      return (
-                        <button
-                          key={o.id}
-                          type="button"
-                          aria-pressed={on}
-                          onClick={() => toggleIn(group.key, o.id)}
-                          className="u-mono px-4 py-2.5"
-                          style={{
-                            border: `1px solid ${on ? 'var(--color-bone)' : 'var(--color-smoke)'}`,
-                            color: on ? 'var(--color-bone)' : 'var(--color-bone-dim)',
-                            background: on ? 'var(--color-ash-3)' : 'transparent',
-                            transition: `all ${DUR.short}s var(--ease-house)`,
-                          }}
-                        >
-                          {o.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setStaged({ stations: [], courses: [], diets: [] })}
-                  className="btn btn--outline flex-1"
-                >
-                  <span>Clear</span>
-                </button>
-                <button type="button" onClick={() => onApply(staged)} className="btn btn--filled flex-1">
-                  <span>Apply</span>
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
   );
 }
 
