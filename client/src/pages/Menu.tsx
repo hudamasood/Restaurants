@@ -288,8 +288,14 @@ export default function Menu() {
                 exit={{ opacity: 0, scale: 0.94 }}
                 transition={{ duration: DUR.short, ease: EASE.house }}
                 onClick={chip.remove}
-                className="u-mono flex items-center gap-2 px-3 py-1.5"
-                style={{ border: '1px solid var(--color-bone-ghost)', color: 'var(--color-bone)' }}
+                className="u-mono flex items-center gap-2"
+                style={{
+                  // Inline, for the same reason as the refine controls: the
+                  // unlayered `button` reset in globals.css outranks utilities.
+                  padding: '0.375rem 0.75rem',
+                  border: '1px solid var(--color-bone-ghost)',
+                  color: 'var(--color-bone)',
+                }}
               >
                 {chip.label}
                 <span aria-hidden="true" style={{ opacity: 0.6 }}>

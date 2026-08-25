@@ -38,9 +38,19 @@ export function CategoryNav({
   return (
     <div ref={containerRef} className="relative">
       <nav aria-label="Menu categories">
+        {/*
+          Padding is inline, not a utility. `globals.css` resets `ul` and
+          `button` padding to 0 outside any cascade layer, and unlayered CSS
+          beats Tailwind's `@layer utilities` regardless of source order — so
+          `py-4` here would silently do nothing.
+        */}
         <ul
-          className="-mx-1 flex items-center gap-x-7 overflow-x-auto px-1 py-4 sm:gap-x-9 [&::-webkit-scrollbar]:hidden"
-          style={{ scrollbarWidth: 'none', scrollSnapType: 'x proximity' }}
+          className="-mx-1 flex items-center gap-x-7 overflow-x-auto sm:gap-x-9 [&::-webkit-scrollbar]:hidden"
+          style={{
+            padding: '1rem 0.25rem',
+            scrollbarWidth: 'none',
+            scrollSnapType: 'x proximity',
+          }}
         >
           {MENU_CATEGORIES.map((cat) => (
             <li key={cat.id} className="shrink-0" style={{ scrollSnapAlign: 'start' }}>
@@ -178,6 +188,10 @@ function SubGroupMenu({
     <AnimatePresence>
       {cat && (
         <motion.div
+          // AnimatePresence tracks presence by key. Without one the exit
+          // animation runs but the node is never unmounted, leaving an
+          // invisible panel over the grid that still swallows clicks.
+          key={cat.id}
           id={`submenu-${cat.id}`}
           role="group"
           aria-label={`${cat.label} sub-groups`}
@@ -229,8 +243,9 @@ function SubGroupItem({
       type="button"
       onClick={onClick}
       aria-current={active ? 'true' : undefined}
-      className="u-mono block w-full px-5 py-3 text-left"
+      className="u-mono block w-full text-left"
       style={{
+        padding: '0.75rem 1.25rem',
         color: active ? 'var(--color-bone)' : 'var(--color-bone-dim)',
         background: active ? 'var(--color-ash-3)' : 'transparent',
         transition: `color ${DUR.micro}s var(--ease-house), background ${DUR.micro}s var(--ease-house)`,

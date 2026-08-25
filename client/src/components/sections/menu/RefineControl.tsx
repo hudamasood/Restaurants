@@ -53,8 +53,11 @@ export function RefineControl({
         aria-expanded={open}
         aria-haspopup="true"
         aria-controls="menu-refine-panel"
-        className="u-mono flex items-center gap-2 px-4 py-2"
+        className="u-mono flex items-center gap-2"
         style={{
+          // Inline padding: globals.css resets `button` padding outside any
+          // cascade layer, which beats Tailwind's layered utilities.
+          padding: '0.5rem 1rem',
           border: `1px solid ${count > 0 ? 'var(--color-bone-ghost)' : 'var(--color-smoke)'}`,
           color: count > 0 ? 'var(--color-bone)' : 'var(--color-bone-dim)',
           background: 'transparent',
@@ -90,6 +93,7 @@ export function RefineControl({
         <AnimatePresence>
           {open && (
             <RefinePanel
+              key="refine-panel"
               query={query}
               courses={courses}
               onToggleCourse={onToggleCourse}
@@ -149,7 +153,7 @@ function RefineSheet({
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[110] flex items-end">
+        <div key="refine-sheet" className="fixed inset-0 z-[110] flex items-end">
           <motion.button
             type="button"
             aria-label="Close filters"
@@ -268,8 +272,9 @@ function RefineOption({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className="u-mono px-3.5 py-2"
+      className="u-mono"
       style={{
+        padding: '0.5rem 0.875rem',
         border: `1px solid ${active ? 'var(--color-bone)' : 'var(--color-smoke)'}`,
         color: active ? 'var(--color-bone)' : 'var(--color-bone-dim)',
         background: active ? 'var(--color-ash-3)' : 'transparent',
