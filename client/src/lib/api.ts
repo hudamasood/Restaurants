@@ -44,6 +44,23 @@ export type ApiResult<T> =
   | { ok: false; kind: 'notFound'; message: string }
   | { ok: false; kind: 'error'; message: string };
 
+/**
+ * A failure that carries no JSON body still has to say something true.
+ * A gateway with nothing behind it, a cold start that timed out, or a crashed
+ * function all arrive here with an HTML or text body and no `error.message` —
+ * and "Something went wrong" told the guest nothing and sent the developer
+ * looking at the wrong layer. The endpoints' own errors are unaffected: they
+ * always send JSON, so this is only reached when the API could not answer.
+ */
+function messageForStatus(status: number): string {
+  if (status === 502 || status === 503 || status === 504) {
+    // Shared by the booking form and the staff sign-in, so it names neither.
+    return 'The server is temporarily unreachable. Please try again in a moment.';
+  }
+  if (status === 429) return 'Too many attempts just now. Please wait a moment and try again.';
+  return 'Something went wrong.';
+}
+
 async function request<T>(url: string, init?: RequestInit): Promise<ApiResult<T>> {
   let res: Response;
   try {
@@ -60,7 +77,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<ApiResult<T>
 
   if (res.ok) return { ok: true, data: body as T };
 
-  const message = body?.error?.message ?? 'Something went wrong.';
+  const message = body?.error?.message ?? messageForStatus(res.status);
   if (res.status === 422) {
     return { ok: false, kind: 'validation', message, fields: body?.error?.fields ?? {} };
   }

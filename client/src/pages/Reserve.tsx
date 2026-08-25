@@ -242,8 +242,19 @@ export default function Reserve() {
                         slots={slots}
                         draft={draft}
                         update={update}
-                        loading={availability.isLoading}
-                        failed={availability.isError}
+                        /*
+                          `isLoading` is `isPending && isFetching`. When the
+                          fetch is paused — React Query holds requests while it
+                          believes the browser is offline — the query is
+                          pending with no data, yet both `isLoading` and
+                          `isError` read false. The grid then fell through to
+                          "no times are available", telling a guest with a
+                          dropped connection that the restaurant is full.
+                          Pending covers that; paused is reported as a failure
+                          they can retry.
+                        */
+                        loading={availability.isPending && availability.fetchStatus !== 'paused'}
+                        failed={availability.isError || availability.fetchStatus === 'paused'}
                         closedReason={availability.data && !availability.data.open ? availability.data.reason : undefined}
                         onRetry={() => availability.refetch()}
                       />

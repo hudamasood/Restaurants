@@ -33,7 +33,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
     },
   });
 
-  if (session.isLoading) {
+  // `isPending`, not `isLoading`. A paused fetch — React Query holds requests
+  // while it believes the browser is offline — is pending with no data while
+  // both `isLoading` and `isError` read false, which fell through to
+  // `session.data as Session` and dereferenced undefined. That white-screened
+  // the dashboard rather than showing the sign-in form.
+  if (session.isPending) {
     return <div style={{ padding: '6rem 2rem', color: 'var(--color-bone-dim)' }}>Checking session…</div>;
   }
   if (session.isError) {
