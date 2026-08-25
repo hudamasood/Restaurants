@@ -48,7 +48,7 @@ export function StoryHero({ lede }: { lede: string }) {
   return (
     <header
       ref={ref}
-      className="u-grain relative flex items-end overflow-hidden"
+      className="u-grain relative flex flex-col justify-end overflow-hidden"
       style={{ minHeight: '88svh', paddingTop: 'var(--nav-h)' }}
     >
       <motion.div
@@ -68,20 +68,32 @@ export function StoryHero({ lede }: { lede: string }) {
       <div className="u-scrim" />
 
       {/*
-        The frames live in the ground to the right of the lede, which is
-        capped at 50ch, so they never cross the type. Below 768px they are not
-        rendered at all: parallax is off there, and two floating frames over a
-        375px hero would crowd the headline rather than deepen it.
+        The two frames read as one deliberate pair rather than two loose
+        pictures: a shared bottom baseline, a 2.5rem gap, and unequal sizes so
+        the stagger falls at their top edges. Before, they sat 24px apart with
+        a 20px top offset, which read as a near-miss rather than a decision.
+
+        They sit in flow above the type rather than floating at a percentage of
+        the hero. The text block's height is roughly constant while the hero
+        scales with the viewport, so no single percentage clears the headline
+        at both 1280x800 and 1366x660 — one or the other always collides. In
+        flow the spacing is correct by construction at every size.
+
+        The layering is unchanged: the clay wall is still absolutely positioned
+        full bleed behind everything, and these still sit over it, parallaxing
+        against it. Only their vertical anchoring changed.
+
+        Below 768px neither is rendered: parallax is off there, and two frames
+        over a 375px hero would crowd the headline rather than deepen it.
       */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-[5] hidden md:block"
+        className="u-shell pointer-events-none relative z-[5] mb-14 mt-8 hidden w-full items-end justify-end gap-10 md:flex"
       >
         <motion.div
-          className="absolute bottom-[42%] xl:bottom-[30%]"
+          className="order-2"
           style={{
-            right: 'clamp(1.25rem, 4vw, 5rem)',
-            width: 'clamp(150px, 16vw, 236px)',
+            width: 'min(clamp(118px, 11.5vw, 172px), 22vh)',
             ...(enabled ? { y: craftY } : {}),
           }}
         >
@@ -90,8 +102,9 @@ export function StoryHero({ lede }: { lede: string }) {
               src={FRAME_CRAFT}
               alt=""
               ratio="3/4"
-              sizes="(min-width: 1024px) 16vw, 22vw"
+              sizes="(min-width: 1024px) 11.5vw, 17vw"
               objectPosition="center 45%"
+              style={{ border: '1px solid color-mix(in srgb, var(--color-bone) 14%, transparent)' }}
             />
             {/* Provenance and time, never temperature-for-its-own-sake. */}
             <AnnotationLayer
@@ -101,11 +114,9 @@ export function StoryHero({ lede }: { lede: string }) {
         </motion.div>
 
         <motion.div
-          className="absolute hidden lg:block"
+          className="order-1 hidden lg:block"
           style={{
-            right: 'calc(clamp(1.25rem, 4vw, 5rem) + clamp(150px, 16vw, 236px) + 1.5rem)',
-            bottom: '46%',
-            width: 'clamp(122px, 12vw, 178px)',
+            width: 'min(clamp(92px, 9vw, 132px), 17vh)',
             ...(enabled ? { y: larderY } : {}),
           }}
         >
@@ -114,8 +125,9 @@ export function StoryHero({ lede }: { lede: string }) {
               src={FRAME_LARDER}
               alt=""
               ratio="4/5"
-              sizes="12vw"
+              sizes="9vw"
               objectPosition="center"
+              style={{ border: '1px solid color-mix(in srgb, var(--color-bone) 14%, transparent)' }}
             />
           </CurtainMask>
         </motion.div>
