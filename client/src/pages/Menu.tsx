@@ -48,22 +48,26 @@ export default function Menu() {
    * active category — so a category switch can never leave a stale sub-group
    * or an impossible course behind.
    */
+  // `DISHES` comes from useMenu, which paints the bundled seed copy first and
+  // swaps in the live database copy on arrival. Every derived value below has
+  // to depend on it, or the grid keeps rendering the seed list after the swap
+  // and an availability change made in the admin never shows.
   const query = useMemo(() => {
     const parsed = parseMenuQuery(params);
     return reconcileQuery(DISHES, parsed);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.toString()]);
+  }, [params.toString(), DISHES]);
 
   const effective = useMemo<MenuQuery>(
     () => ({ ...query, search }),
     [query, search],
   );
 
-  const results = useMemo(() => filterDishes(DISHES, effective), [effective]);
+  const results = useMemo(() => filterDishes(DISHES, effective), [DISHES, effective]);
 
   const availableCourses = useMemo(
     () => coursesInCategory(DISHES, query.category),
-    [query.category],
+    [DISHES, query.category],
   );
 
   const commit = useCallback(
@@ -71,7 +75,7 @@ export default function Menu() {
       const reconciled = reconcileQuery(DISHES, next);
       setParams(writeMenuQuery(params, reconciled), { replace: true });
     },
-    [params, setParams],
+    [DISHES, params, setParams],
   );
 
   /** Puts the top of the grid just under the two sticky bars. */
