@@ -51,7 +51,16 @@ export interface Dish {
   provenance: ProvenancePair[];
   isSignature: boolean;
   motionSignature?: MotionSignature;
-  media: { primary: string; landscape?: string; square?: string; process?: string[] };
+  media: {
+    primary: string;
+    landscape?: string;
+    square?: string;
+    process?: string[];
+    /** Homepage signature-chapter frame. Falls back to `primary`.
+     * Exists so the landing page's established look is fixed independently of
+     * the menu card, which is chosen purely for dish accuracy. */
+    home?: string;
+  };
   pairedDrink?: string;
   isAvailable: boolean;
   pickupEligible: boolean;

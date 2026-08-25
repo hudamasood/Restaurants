@@ -108,7 +108,9 @@ function Chapter({
             <CurtainMask className="relative" margin="0px 0px -20% 0px">
               <motion.div style={enabled ? { y: imageY } : undefined}>
                 <Picture
-                  src={dish.media.primary}
+                  // Homepage keeps its established frame; the menu card is
+                  // chosen for dish accuracy and can differ.
+                  src={dish.media.home ?? dish.media.primary}
                   alt={dish.name}
                   ratio={isMobile ? '4/5' : '3/4'}
                   sizes="(max-width: 1024px) 100vw, 58vw"
