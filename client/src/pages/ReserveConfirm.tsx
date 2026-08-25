@@ -1,29 +1,30 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { PageShell } from '@/components/layout/PageShell';
 import { LineMask } from '@/components/motion/LineMask';
 import { CurtainMask } from '@/components/motion/CurtainMask';
 import { Reveal } from '@/components/motion/Reveal';
 import { BRAND } from '@/data/brand';
-import { SEATING_AREAS } from '@/data/site';
 import { formatDate } from '@/lib/format';
-import type { Reservation } from '@/types';
+import { getReservation } from '@/lib/api';
 
 export default function ReserveConfirm() {
   const { reference } = useParams<{ reference: string }>();
-  const [booking, setBooking] = useState<Reservation | null>(null);
 
-  useEffect(() => {
-    if (!reference) return;
-    const raw = sessionStorage.getItem(`mh:reservation:${reference}`);
-    if (raw) {
-      try {
-        setBooking(JSON.parse(raw));
-      } catch {
-        setBooking(null);
-      }
-    }
-  }, [reference]);
+  // Fetched by reference rather than read from this browser's session, so the
+  // link works when it is bookmarked, shared, or opened on another device.
+  const query = useQuery({
+    queryKey: ['reservation', reference],
+    enabled: Boolean(reference),
+    queryFn: async () => {
+      const r = await getReservation(reference!);
+      if (!r.ok) throw new Error(r.message);
+      return r.data.booking;
+    },
+    retry: 1,
+  });
+  const booking = query.data ?? null;
 
   const ics = useMemo(() => {
     if (!booking?.date || !booking.time) return null;
@@ -44,7 +45,7 @@ export default function ReserveConfirm() {
     return `data:text/calendar;charset=utf-8,${encodeURIComponent(body)}`;
   }, [booking]);
 
-  const room = SEATING_AREAS.find((s) => s.id === booking?.seatingArea);
+  const roomName = booking?.seatingAreaName ?? '—';
 
   return (
     <PageShell
@@ -90,7 +91,7 @@ export default function ReserveConfirm() {
                   { label: 'Date', value: booking.date ? formatDate(booking.date) : '—' },
                   { label: 'Time', value: booking.time ?? '—' },
                   { label: 'Guests', value: String(booking.partySize ?? '—') },
-                  { label: 'Room', value: room?.name ?? '—' },
+                  { label: 'Room', value: roomName },
                   { label: 'Name', value: booking.name },
                   { label: 'Email', value: booking.email },
                   ...(booking.occasion ? [{ label: 'Occasion', value: booking.occasion }] : []),
@@ -166,15 +167,26 @@ export default function ReserveConfirm() {
               </div>
             </aside>
           </div>
+        ) : query.isLoading ? (
+          <div className="flex flex-col gap-3" aria-busy="true">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="skeleton" style={{ height: 44, maxWidth: 520 }} />
+            ))}
+          </div>
         ) : (
           <div>
             <p className="mb-8" style={{ color: 'var(--color-bone-dim)', maxWidth: '46ch' }}>
-              We could not find the details for this reference in this browser session. The
-              confirmation email holds the full booking — or call us with the code above.
+              We could not find a reservation with that reference. Check the code from your
+              confirmation email, or call us and we will look it up.
             </p>
-            <Link to="/reserve" className="btn btn--outline">
-              <span>Make a new reservation</span>
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <a href={`tel:${BRAND.phone.replace(/\s/g, '')}`} className="btn btn--outline">
+                <span>{BRAND.phone}</span>
+              </a>
+              <Link to="/reserve" className="btn btn--ghost">
+                <span>Make a new reservation</span>
+              </Link>
+            </div>
           </div>
         )}
       </div>

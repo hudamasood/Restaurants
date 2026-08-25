@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
+import { useQuery } from '@tanstack/react-query';
+import { getAvailability, createReservation } from '@/lib/api';
 import { PageShell } from '@/components/layout/PageShell';
 import { Picture } from '@/components/media/Picture';
 import { LineMask } from '@/components/motion/LineMask';
 import { Reveal } from '@/components/motion/Reveal';
 import { DUR, EASE } from '@/motion/constants';
 import { useCanAnimate } from '@/motion/guards';
-import { SEATING_AREAS, HOURS } from '@/data/site';
-import { addDays, formatDate, reference, toISO } from '@/lib/format';
+import { SEATING_AREAS } from '@/data/site';
+import { addDays, formatDate, toISO } from '@/lib/format';
 import type { ReservationDraft } from '@/types';
 
 const STEPS = ['Date', 'Time', 'Guests', 'Seating', 'Details'] as const;
@@ -22,36 +24,6 @@ const detailsSchema = z.object({
   phone: z.string().min(7, 'Please enter a contact number'),
 });
 
-/** Deterministic pseudo-availability, so the same date always looks the same. */
-function slotsFor(date: string, party: number): { time: string; available: boolean }[] {
-  const day = new Date(`${date}T00:00:00`).getDay();
-  const map = [6, 0, 1, 2, 3, 4, 5];
-  const hours = HOURS[map[day]];
-  if (!hours.open) return [];
-
-  const [oh, om] = hours.open.split(':').map(Number);
-  const [ch] = hours.close!.split(':').map(Number);
-  const closeH = ch <= oh ? ch + 24 : ch;
-
-  const out: { time: string; available: boolean }[] = [];
-  let seed = 0;
-  for (const c of date) seed = (seed * 31 + c.charCodeAt(0)) % 9973;
-
-  for (let h = oh, m = om; h < closeH - 1; ) {
-    const label = `${String(h % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-    seed = (seed * 1103515245 + 12345) % 2147483648;
-    const roll = (seed >> 16) % 100;
-    // Larger parties see fewer slots — scarcity is real, and shown, not hidden.
-    out.push({ time: label, available: roll > (party > 6 ? 55 : 28) });
-    m += 30;
-    if (m >= 60) {
-      m = 0;
-      h += 1;
-    }
-  }
-  return out;
-}
-
 export default function Reserve() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
@@ -61,6 +33,7 @@ export default function Reserve() {
   const [direction, setDirection] = useState<1 | -1>(1);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number | undefined>();
 
@@ -116,10 +89,21 @@ export default function Reserve() {
     return () => ro.disconnect();
   }, [step]);
 
-  const slots = useMemo(
-    () => (draft.date ? slotsFor(draft.date, draft.partySize ?? 2) : []),
-    [draft.date, draft.partySize],
-  );
+  // Real availability, from the kitchen's actual bookings.
+  const party = draft.partySize ?? 2;
+  const availability = useQuery({
+    queryKey: ['availability', draft.date, party],
+    enabled: Boolean(draft.date),
+    queryFn: async () => {
+      const r = await getAvailability(draft.date!, party);
+      if (!r.ok) throw new Error(r.message);
+      return r.data;
+    },
+    // A slot someone else just took should not linger in the grid.
+    staleTime: 15_000,
+    retry: 1,
+  });
+  const slots = availability.data?.slots ?? [];
 
   const submit = async () => {
     const parsed = detailsSchema.safeParse(draft);
@@ -131,18 +115,48 @@ export default function Reserve() {
     }
     setErrors({});
     setSubmitting(true);
+    setSubmitError(null);
 
-    // A slot can be taken during submission — the flow returns to the time
-    // step with the conflict flagged rather than failing silently.
-    await new Promise((r) => setTimeout(r, 900));
+    const result = await createReservation({
+      date: draft.date!,
+      time: draft.time!,
+      partySize: draft.partySize!,
+      seatingArea: draft.seatingArea!,
+      name: draft.name,
+      email: draft.email,
+      phone: draft.phone,
+      occasion: draft.occasion,
+      dietaryNotes: draft.dietaryNotes,
+      accessibilityNotes: draft.accessibilityNotes,
+    });
 
-    const ref = reference();
+    setSubmitting(false);
+
+    if (!result.ok) {
+      if (result.kind === 'validation') {
+        setErrors(result.fields);
+        return;
+      }
+      if (result.kind === 'conflict') {
+        // The slot filled between choosing it and confirming. Send the guest
+        // back to the time step with fresh availability rather than leaving
+        // them on a dead form.
+        setSubmitError(result.message);
+        if (result.code === 'slot_taken') {
+          update({ time: null });
+          availability.refetch();
+          goTo(2);
+        }
+        return;
+      }
+      // The draft is deliberately left in sessionStorage so a network failure
+      // costs the guest nothing.
+      setSubmitError(result.message);
+      return;
+    }
+
     sessionStorage.removeItem(DRAFT_KEY);
-    sessionStorage.setItem(
-      `mh:reservation:${ref}`,
-      JSON.stringify({ ...draft, reference: ref, status: 'confirmed', createdAt: new Date().toISOString() }),
-    );
-    navigate(`/reserve/${ref}`);
+    navigate(`/reserve/${result.data.booking.reference}`);
   };
 
   const canAdvance = [
@@ -227,7 +241,15 @@ export default function Reserve() {
                   >
                     {step === 1 && <StepDate draft={draft} update={update} />}
                     {step === 2 && (
-                      <StepTime slots={slots} draft={draft} update={update} />
+                      <StepTime
+                        slots={slots}
+                        draft={draft}
+                        update={update}
+                        loading={availability.isLoading}
+                        failed={availability.isError}
+                        closedReason={availability.data && !availability.data.open ? availability.data.reason : undefined}
+                        onRetry={() => availability.refetch()}
+                      />
                     )}
                     {step === 3 && <StepGuests draft={draft} update={update} />}
                     {step === 4 && <StepSeating draft={draft} update={update} />}
@@ -238,6 +260,21 @@ export default function Reserve() {
                 </AnimatePresence>
               </div>
             </motion.div>
+
+            {submitError && (
+              <p
+                role="alert"
+                className="mt-10 border-l pl-5"
+                style={{
+                  borderColor: 'var(--color-stop)',
+                  color: 'var(--color-bone)',
+                  paddingTop: '0.35rem',
+                  paddingBottom: '0.35rem',
+                }}
+              >
+                {submitError}
+              </p>
+            )}
 
             <div className="mt-12 flex gap-3">
               {step > 1 && (
@@ -413,10 +450,18 @@ function StepTime({
   slots,
   draft,
   update,
+  loading,
+  failed,
+  closedReason,
+  onRetry,
 }: {
   slots: { time: string; available: boolean }[];
   draft: ReservationDraft;
   update: (p: Partial<ReservationDraft>) => void;
+  loading: boolean;
+  failed: boolean;
+  closedReason?: string;
+  onRetry: () => void;
 }) {
   const canAnimate = useCanAnimate();
 
@@ -429,9 +474,26 @@ function StepTime({
         {draft.date ? formatDate(draft.date) : 'Pick a date first.'}
       </p>
 
-      {slots.length === 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5" aria-busy="true">
+          {Array.from({ length: 15 }).map((_, i) => (
+            <div key={i} className="skeleton" style={{ height: 46 }} />
+          ))}
+        </div>
+      ) : failed ? (
+        <div>
+          <p className="mb-5" style={{ color: 'var(--color-bone-dim)' }}>
+            We could not load available times just now.
+          </p>
+          <button type="button" onClick={onRetry} className="btn btn--outline">
+            <span>Try again</span>
+          </button>
+        </div>
+      ) : closedReason ? (
+        <p style={{ color: 'var(--color-bone-dim)' }}>{closedReason}. Choose another date.</p>
+      ) : slots.length === 0 ? (
         <p style={{ color: 'var(--color-bone-dim)' }}>
-          We are closed on that date. Choose another.
+          No times are available for that date. Choose another.
         </p>
       ) : (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5">
