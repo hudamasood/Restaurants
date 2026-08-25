@@ -30,6 +30,41 @@ import { dishBySlug } from '@/data/menu';
 import { useMenu } from '@/hooks/useMenu';
 import type { CourseId, Dish } from '@/types';
 
+/**
+ * True while the page is being scrolled down past `activeAfter`, false again
+ * on the first meaningful scroll up. The 8px deadband and the "shown below
+ * the threshold" rule are the same ones `useScrollDirection` applies to the
+ * nav, so the bar and the nav withdraw and return together.
+ *
+ * It reads the scroll event directly rather than going through Motion's
+ * `useScroll`, which samples inside the frame loop. This build already treats
+ * a stalled frame loop as a case that must not break the page — the reveal
+ * system was moved onto CSS for exactly that reason — and a browse bar that
+ * could strand itself off-screen would be a worse failure than a reveal that
+ * never plays.
+ */
+function useHideOnScrollDown(activeAfter: number): boolean {
+  const [hidden, setHidden] = useState(false);
+  const last = useRef(0);
+
+  useEffect(() => {
+    last.current = window.scrollY;
+
+    const onScroll = () => {
+      const y = window.scrollY;
+      const delta = y - last.current;
+      if (Math.abs(delta) < 8) return;
+      last.current = y;
+      setHidden(y < activeAfter ? false : delta > 0);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [activeAfter]);
+
+  return hidden;
+}
+
 export default function Menu() {
   const { dishes: DISHES } = useMenu();
   const [params, setParams] = useSearchParams();
@@ -39,8 +74,59 @@ export default function Menu() {
 
   const barRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
 
   const quickSlug = params.get('dish');
+
+  /**
+   * The scroll position at which the browse bar stops flowing with the page
+   * and pins under the nav — the bottom of the header, less the nav's height.
+   *
+   * It is measured rather than assumed because the header is `55vh` plus
+   * whatever the filter summary wraps to. Until it is known the value is
+   * Infinity, which keeps the bar shown — anything below the threshold counts
+   * as "not scrolled far enough to withdraw".
+   */
+  const [pinPoint, setPinPoint] = useState(Number.POSITIVE_INFINITY);
+
+  useEffect(() => {
+    const measure = () => {
+      const el = headerRef.current;
+      if (!el) return;
+      const navH =
+        Number.parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue('--nav-h'),
+        ) || 88;
+      const bottom = el.getBoundingClientRect().bottom + window.scrollY;
+      setPinPoint(Math.max(0, bottom - navH));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
+  /**
+   * Gated on `pinPoint` so the bar only ever hides once it is actually
+   * pinned — before that it is still in normal flow, and translating it would
+   * slide it up over the header.
+   */
+  const scrolledAway = useHideOnScrollDown(pinPoint);
+
+  // A category click scrolls the grid up under the bar. That is a programmatic
+  // scroll, and when it runs downward the direction signal would read it as
+  // intent to hide the bar the user just used. Hold the bar open across it.
+  const [holdOpen, setHoldOpen] = useState(false);
+  const holdTimer = useRef<number | undefined>(undefined);
+
+  const holdBarOpen = useCallback(() => {
+    setHoldOpen(true);
+    window.clearTimeout(holdTimer.current);
+    holdTimer.current = window.setTimeout(() => setHoldOpen(false), 900);
+  }, []);
+
+  useEffect(() => () => window.clearTimeout(holdTimer.current), []);
+
+  const barHidden = scrolledAway && !holdOpen;
 
   /**
    * Filters live in the URL so the state stays shareable. Parsing validates
@@ -98,9 +184,10 @@ export default function Menu() {
       commit({ ...query, category, subGroup });
       // The grid is one list, so the category "section" is brought to the top
       // of the viewport rather than jumped to as a separate anchor.
+      holdBarOpen();
       requestAnimationFrame(scrollToResults);
     },
-    [commit, query, scrollToResults],
+    [commit, query, scrollToResults, holdBarOpen],
   );
 
   const toggleCourse = useCallback(
@@ -189,6 +276,7 @@ export default function Menu() {
     >
       {/* Compact header */}
       <header
+        ref={headerRef}
         className="relative flex items-end"
         style={{ minHeight: '55vh', paddingTop: 'var(--nav-h)' }}
       >
@@ -204,8 +292,21 @@ export default function Menu() {
 
       {/*
         Browse bar — category navigation with the refine control alongside it.
-        Solid ground, not translucent: it sits over dish photography for the
-        whole scroll and must never let an image read through it.
+        Solid ground, not translucent: while pinned it sits over dish
+        photography and must never let an image read through it.
+
+        It holds its own space at the top of the menu section and only pins
+        once the header has passed. From there it withdraws on scroll down and
+        returns on scroll up, so it is not standing across the photography for
+        the length of a 56-dish grid. It travels its own height plus the nav's
+        so it clears the viewport completely rather than stalling half-under a
+        nav that may itself have withdrawn.
+
+        `transform` is `none` rather than `translateY(0)` when shown: a
+        transform on an ancestor makes it the containing block for `position:
+        fixed` descendants, and the refine control's mobile sheet is fixed.
+        The bar is always shown when that sheet can be open — opening it
+        requires the Filter button, and scroll is locked while it is up.
       */}
       <div
         ref={barRef}
@@ -215,6 +316,9 @@ export default function Menu() {
           background: 'var(--color-ink)',
           borderTop: '1px solid var(--color-smoke)',
           borderBottom: '1px solid var(--color-smoke)',
+          transform: barHidden ? 'translateY(calc(-100% - var(--nav-h)))' : 'none',
+          // 300ms matches `.nav-shell`, so the bar and the nav settle together.
+          transition: canAnimate ? 'transform 300ms var(--ease-house)' : 'none',
         }}
       >
         {/*
