@@ -6,13 +6,11 @@ import { Picture } from '@/components/media/Picture';
 import { CurtainMask } from '@/components/motion/CurtainMask';
 import { Link } from 'react-router-dom';
 import { EXPERIENCES } from '@/data/site';
+import { PAGE_META } from '@/data/pageMeta';
 
 export default function ExperiencePage() {
   return (
-    <PageShell
-      title="Rooms & Occasions"
-      description="Five rooms — the main room, the chef's table, private dining, the terrace, and full buyouts for events."
-    >
+    <PageShell {...PAGE_META['/experience']}>
       <header className="u-shell" style={{ paddingTop: 'calc(var(--nav-h) + 6rem)' }}>
         <Reveal y={0}>
           <p className="u-mono mb-7" style={{ color: 'var(--color-saffron)' }}>

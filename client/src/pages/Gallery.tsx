@@ -11,6 +11,7 @@ import { useCanAnimate } from '@/motion/guards';
 import { useEscape, useFocusTrap, useScrollLock } from '@/app/overlay';
 import { GALLERY } from '@/data/site';
 import type { GalleryItem } from '@/types';
+import { PAGE_META } from '@/data/pageMeta';
 
 const CATEGORIES = [
   { id: 'all', label: 'Everything' },
@@ -46,10 +47,7 @@ export default function Gallery() {
   }, [params, setParams]);
 
   return (
-    <PageShell
-      title="Gallery"
-      description="The room, the kitchen, the food and the bar."
-    >
+    <PageShell {...PAGE_META['/gallery']}>
       <header className="u-shell" style={{ paddingTop: 'calc(var(--nav-h) + 6rem)' }}>
         <Reveal y={0}>
           <p className="u-mono mb-7" style={{ color: 'var(--color-saffron)' }}>

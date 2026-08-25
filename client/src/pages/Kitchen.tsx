@@ -10,16 +10,14 @@ import { DUR, EASE } from '@/motion/constants';
 import { useCanAnimate } from '@/motion/guards';
 import { CHEFS } from '@/data/site';
 import { STATION_LABELS } from '@/data/menu';
+import { PAGE_META } from '@/data/pageMeta';
 
 export default function Kitchen() {
   const [open, setOpen] = useState<string | null>(null);
   const canAnimate = useCanAnimate();
 
   return (
-    <PageShell
-      title="The Kitchen"
-      description="Environmental portraits of the brigade, photographed at the station they run."
-    >
+    <PageShell {...PAGE_META['/story/kitchen']}>
       <header className="u-shell" style={{ paddingTop: 'calc(var(--nav-h) + 6rem)' }}>
         <Reveal y={0}>
           <p className="u-mono mb-7" style={{ color: 'var(--color-saffron)' }}>

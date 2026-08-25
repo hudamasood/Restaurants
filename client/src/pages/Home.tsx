@@ -8,11 +8,11 @@ import { ExperienceRail } from '@/components/sections/home/ExperienceRail';
 import { GalleryStrip } from '@/components/sections/home/GalleryStrip';
 import { ReviewCarousel } from '@/components/sections/home/ReviewCarousel';
 import { ReserveBand } from '@/components/sections/home/ReserveBand';
-import { BRAND } from '@/data/brand';
+import { PAGE_META } from '@/data/pageMeta';
 
 export default function Home() {
   return (
-    <PageShell title={BRAND.name} description={BRAND.description}>
+    <PageShell {...PAGE_META['/']}>
       <Hero />
       <StationRail />
       <SignatureChapters />

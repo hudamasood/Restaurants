@@ -13,6 +13,7 @@ import { useCanAnimate } from '@/motion/guards';
 import { SEATING_AREAS } from '@/data/site';
 import { addDays, formatDate, toISO } from '@/lib/format';
 import type { ReservationDraft } from '@/types';
+import { PAGE_META } from '@/data/pageMeta';
 
 const STEPS = ['Date', 'Time', 'Guests', 'Seating', 'Details'] as const;
 
@@ -174,10 +175,7 @@ export default function Reserve() {
 
 
   return (
-    <PageShell
-      title="Reserve a Table"
-      description="Reserve up to ninety days ahead. Parties above eight are handled by the private dining team."
-    >
+    <PageShell {...PAGE_META['/reserve']}>
       <div className="u-shell" style={{ paddingTop: 'calc(var(--nav-h) + 4rem)' }}>
         <Reveal y={0}>
           <p className="u-mono mb-6" style={{ color: 'var(--color-saffron)' }}>

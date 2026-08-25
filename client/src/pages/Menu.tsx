@@ -29,6 +29,7 @@ import type { CategoryId, DietaryId, MenuQuery } from '@/lib/menuFilter';
 import { dishBySlug } from '@/data/menu';
 import { useMenu } from '@/hooks/useMenu';
 import type { CourseId, Dish } from '@/types';
+import { PAGE_META } from '@/data/pageMeta';
 
 /**
  * True while the page is being scrolled down past `activeAfter`, false again
@@ -270,10 +271,7 @@ export default function Menu() {
   const anythingActive = refineCount > 0 || query.category !== DEFAULT_CATEGORY;
 
   return (
-    <PageShell
-      title="The Menu"
-      description="Fifty-six dishes across three kitchens — Tandoor & Dum, The Grill and The Sea — with a full dietary matrix and a separate shellfish legend."
-    >
+    <PageShell {...PAGE_META['/menu']}>
       {/* Compact header */}
       <header
         ref={headerRef}

@@ -6,6 +6,7 @@ import './styles/globals.css';
 import { Providers } from './app/providers';
 import { ErrorBoundary } from './components/layout/ErrorBoundary';
 import { App } from './app/App';
+import { reportVitals } from './lib/vitals';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -18,3 +19,5 @@ createRoot(document.getElementById('root')!).render(
     </ErrorBoundary>
   </StrictMode>,
 );
+
+reportVitals();

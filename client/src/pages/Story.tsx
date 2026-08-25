@@ -5,13 +5,11 @@ import { LineMask } from '@/components/motion/LineMask';
 import { Reveal } from '@/components/motion/Reveal';
 import { StoryBlock } from '@/components/sections/home/StoryBlock';
 import { BRAND, img } from '@/data/brand';
+import { PAGE_META } from '@/data/pageMeta';
 
 export default function Story() {
   return (
-    <PageShell
-      title="Our Story"
-      description="Three kitchens around one hearth, named suppliers, a forty-five day dry-age programme, and HMC certification with the body named."
-    >
+    <PageShell {...PAGE_META['/story']}>
       <header
         className="relative flex items-end"
         style={{ minHeight: '80svh', paddingTop: 'var(--nav-h)' }}

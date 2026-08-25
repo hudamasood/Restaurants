@@ -10,6 +10,7 @@ import { motion, useTransform, type MotionValue } from 'motion/react';
 import { EASE } from '@/motion/constants';
 import { useMenu } from '@/hooks/useMenu';
 import { DRINK_FAMILIES } from '@/data/site';
+import { PAGE_META } from '@/data/pageMeta';
 
 
 export default function StillRoom() {
@@ -18,10 +19,7 @@ export default function StillRoom() {
   const HOT = dishes.filter((d) => d.course === 'coffeeTea');
 
   return (
-    <PageShell
-      title="The Still Room"
-      description="Twelve zero-proof drinks built on clarification, wild fermentation, cask ageing and smoke. A programme, not an absence."
-    >
+    <PageShell {...PAGE_META['/still-room']}>
       {/* Statement hero */}
       <header
         className="relative flex items-end"

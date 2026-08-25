@@ -6,6 +6,7 @@ import { Reveal } from '@/components/motion/Reveal';
 import { DUR } from '@/motion/constants';
 import { BRAND } from '@/data/brand';
 import { useMenu } from '@/hooks/useMenu';
+import { PAGE_META } from '@/data/pageMeta';
 
 const COLUMNS = [
   { id: 'vegetarian', label: 'Veg' },
@@ -26,10 +27,7 @@ export default function Allergens() {
   );
 
   return (
-    <PageShell
-      title="Allergens & Dietary"
-      description={`The full dietary matrix for all ${DISHES.length} dishes, the finned-fish and shellfish legend, and halal certification by the ${BRAND.certification.body}.`}
-    >
+    <PageShell {...PAGE_META['/allergens']}>
       <div className="u-shell" style={{ paddingTop: 'calc(var(--nav-h) + 6rem)' }}>
         <Reveal y={0}>
           <p className="u-mono mb-7" style={{ color: 'var(--color-saffron)' }}>

@@ -11,6 +11,7 @@ import { CurtainMask } from '@/components/motion/CurtainMask';
 import { DUR, EASE } from '@/motion/constants';
 import { BRAND } from '@/data/brand';
 import { HOURS, todayHours } from '@/data/site';
+import { PAGE_META } from '@/data/pageMeta';
 
 const schema = z.object({
   name: z.string().min(2, 'Please enter a name'),
@@ -73,10 +74,7 @@ export default function Contact() {
   )}&zoom=15&size=800x600&scale=2&maptype=roadmap`;
 
   return (
-    <PageShell
-      title="Contact"
-      description={`${BRAND.address.line1}, ${BRAND.address.line2}, ${BRAND.address.city} ${BRAND.address.postcode}. Reservations, private dining and press enquiries.`}
-    >
+    <PageShell {...PAGE_META['/contact']}>
       <div className="u-shell" style={{ paddingTop: 'calc(var(--nav-h) + 6rem)' }}>
         <Reveal y={0}>
           <p className="u-mono mb-7" style={{ color: 'var(--color-saffron)' }}>
