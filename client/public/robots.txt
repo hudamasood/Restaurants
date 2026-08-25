@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Staff tool and API surface: nothing here is useful in an index, and the
+# reservation endpoints should not be crawled at all.
+Disallow: /admin
+Disallow: /api/
+# Confirmation pages are per-booking and contain guest details.
+Disallow: /reserve/
+
+Sitemap: https://marrowandhearth.com/sitemap.xml
