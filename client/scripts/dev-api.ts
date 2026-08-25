@@ -12,6 +12,9 @@ const ROUTES: Record<string, () => Promise<{ default: (req: Request) => Promise<
   '/api/availability': () => import('../api/availability.ts'),
   '/api/reservations': () => import('../api/reservations.ts'),
   '/api/contact': () => import('../api/contact.ts'),
+  '/api/admin/session': () => import('../api/admin/session.ts'),
+  '/api/admin/reservations': () => import('../api/admin/reservations.ts'),
+  '/api/admin/dishes': () => import('../api/admin/dishes.ts'),
 };
 
 const PORT = Number(process.env.DEV_API_PORT ?? 8787);
