@@ -12,7 +12,9 @@
     "db:migrate": "node scripts/migrate.mjs",
     "db:seed": "node scripts/seed.mjs && npx esbuild scripts/seed-menu.ts --bundle --platform=node --format=esm --target=node20 --packages=external --outfile=node_modules/.seed/seed-menu.mjs && node node_modules/.seed/seed-menu.mjs",
     "build:seo": "node scripts/build-seo.mjs && node scripts/build-og.mjs",
-    "build:prerender": "node scripts/build-prerender.mjs"
+    "build:prerender": "node scripts/build-prerender.mjs",
+    "db:backup": "node scripts/backup.mjs",
+    "db:restore": "node scripts/restore.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
