@@ -93,7 +93,7 @@ export const DISHES: Dish[] = [
     motionSignature: 'macro',
     media: {
       primary: img('1627900429100-3ed333915540'),
-      landscape: img('1580476262798-bddd9f4b7369'),
+      landscape: img('1627900429100-3ed333915540'),
       process: [img('1541167760496-1628856ab772'), img('1519708227418-c8fd9a32b7a2')],
     },
     pairedDrink: 'd44',
@@ -122,7 +122,7 @@ export const DISHES: Dish[] = [
     motionSignature: 'build',
     media: {
       primary: img('1651323018466-b36b7df1d2b1'),
-      landscape: img('1580476262798-bddd9f4b7369'),
+      landscape: img('1651323018466-b36b7df1d2b1'),
       process: [img('1559737558-2f5a35f4523b'), img('1541167760496-1628856ab772')],
     },
     pairedDrink: 'd40',
@@ -293,7 +293,7 @@ export const DISHES: Dish[] = [
     motionSignature: 'turntable',
     media: {
       primary: img('1615937657715-bc7b4b7962c1'),
-      landscape: img('1600891964092-4316c288032e'),
+      landscape: img('1615937657715-bc7b4b7962c1'),
       process: [img('1555939594-58d7cb561ad1'), img('1424847651672-bf20a4b0982b'), img('1504674900247-0877df9cc836')],
     },
     pairedDrink: 'd39',
@@ -323,7 +323,7 @@ export const DISHES: Dish[] = [
     motionSignature: 'pan',
     media: {
       primary: img('1635897411141-7bd2b9c6ab16'),
-      landscape: img('1585032226651-759b368d7246'),
+      landscape: img('1635897411141-7bd2b9c6ab16'),
       process: [img('1631452180519-c014fe946bc7'), img('1596797038530-2c107229654b')],
     },
     pairedDrink: 'd42',
@@ -353,7 +353,7 @@ export const DISHES: Dish[] = [
     motionSignature: 'lidLift',
     media: {
       primary: img('1631515243349-e0cb75fb8d3a'),
-      landscape: img('1596797038530-2c107229654b'),
+      landscape: img('1631515243349-e0cb75fb8d3a'),
       process: [img('1585032226651-759b368d7246'), img('1617093727343-374698b1b08d')],
     },
     pairedDrink: 'd50',
@@ -382,7 +382,7 @@ export const DISHES: Dish[] = [
     motionSignature: 'colourBleed',
     media: {
       primary: img('1545247181-516773cae754'),
-      landscape: img('1585032226651-759b368d7246'),
+      landscape: img('1545247181-516773cae754'),
       process: [img('1631452180519-c014fe946bc7'), img('1606491956689-2ea866880c84')],
     },
     pairedDrink: 'd43',
@@ -731,7 +731,7 @@ export const DISHES: Dish[] = [
     motionSignature: 'risePour',
     media: {
       primary: img('1673551490812-eaee2e9bf0ef'),
-      landscape: img('1551024601-bec78aea704b'),
+      landscape: img('1673551490812-eaee2e9bf0ef'),
       process: [img('1488900128323-21503983a07e'), img('1553163147-622ab57be1c7')],
     },
     pairedDrink: 'd52',
@@ -847,7 +847,7 @@ export const DISHES: Dish[] = [
     motionSignature: 'smokeClear',
     media: {
       primary: img('1621873495914-1c921811e37b'),
-      landscape: img('1470124182917-cc6e71b22ecc'),
+      landscape: img('1621873495914-1c921811e37b'),
       process: [img('1514933651103-005eec06c04b'), img('1470337458703-46ad1756a187')],
     },
     isAvailable: true,
