@@ -153,10 +153,17 @@ function FamilyStage({
    * in and out at the edges of its own scroll range turns every boundary
    * (header → family, family → family, family → the list below) into the
    * same kind of dissolve the hero uses between its chapters, rather than
-   * a seam. The page background is --color-ink, so at opacity 0 the frame
-   * reads as pure black, matching the dark ground on both sides of it.
+   * a seam.
+   *
+   * The floor is 0.85, not 0. Each stage is pinned and filling the viewport
+   * at its own progress 0 and 1 — those are not moments when the frame is
+   * off-screen, they are the moments it covers everything. Fading to zero
+   * there turned the whole screen --color-ink, and because the stages are
+   * stacked back to back the outgoing stage hit 0 as the incoming one did,
+   * so every boundary blacked out completely. Softening the edge was the
+   * intent; the blackout was not. Same keyframes, same timing.
    */
-  const dissolve = useTransform(progress, [0, 0.08, 0.92, 1], [0, 1, 1, 0]);
+  const dissolve = useTransform(progress, [0, 0.08, 0.92, 1], [0.85, 1, 1, 0.85]);
   // Reduced motion supplies a MotionValue frozen at 0, which would otherwise
   // pin the image invisible and the text at 40% forever.
   const imageOpacity = enabled ? dissolve : 1;
@@ -166,7 +173,13 @@ function FamilyStage({
     <div className="relative h-full w-full overflow-hidden" style={{ background: 'var(--color-ink)' }}>
       <motion.div className="absolute inset-0" style={{ opacity: imageOpacity }}>
         <motion.div className="h-[112%] w-full" style={enabled ? { y } : undefined}>
-          <Picture src={family.image} alt="" className="h-full w-full" sizes="100vw" />
+          {/*
+            Decoded before the scroll reaches it. These are off-screen at
+            load, so lazily they only began fetching as the stage came into
+            view — and what the transition uncovered was the placeholder,
+            not the photograph.
+          */}
+          <Picture src={family.image} alt="" eager className="h-full w-full" sizes="100vw" />
         </motion.div>
         <div className="u-scrim-left" />
       </motion.div>
