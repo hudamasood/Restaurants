@@ -6,6 +6,7 @@ import { LineMask } from '@/components/motion/LineMask';
 import { Reveal, RevealGroup, RevealItem } from '@/components/motion/Reveal';
 import { StickyStage } from '@/components/motion/StickyStage';
 import { DishCard } from '@/components/sections/menu/DishCard';
+import { StillRoomHero } from '@/components/sections/stillroom/StillRoomHero';
 import { motion, useTransform, type MotionValue } from 'motion/react';
 import { EASE } from '@/motion/constants';
 import { useMenu } from '@/hooks/useMenu';
@@ -21,39 +22,7 @@ export default function StillRoom() {
   return (
     <PageShell {...PAGE_META['/still-room']}>
       {/* Statement hero */}
-      <header
-        className="relative flex items-end"
-        style={{ minHeight: '88svh', paddingTop: 'var(--nav-h)' }}
-      >
-        <Picture
-          src={DRINK_FAMILIES[1].image}
-          alt=""
-          priority
-          className="absolute inset-0 h-full w-full"
-          sizes="100vw"
-        />
-        <div className="u-scrim" />
-
-        <div className="u-shell relative z-10 w-full pb-16">
-          <Reveal y={0}>
-            <p className="u-mono mb-7" style={{ color: 'var(--color-saffron)' }}>
-              The Still Room
-            </p>
-          </Reveal>
-          <LineMask
-            text="No alcohol. No compromise."
-            as="h1"
-            className="u-display mb-7"
-            animateOnMount
-          />
-          <Reveal delay={0.4}>
-            <p style={{ color: 'var(--color-bone-dim)', maxWidth: '50ch', fontSize: 'var(--t-lede)' }}>
-              Twelve drinks that take between four hours and three weeks to make. The technique is
-              the point — and the reason the price sits where it does.
-            </p>
-          </Reveal>
-        </div>
-      </header>
+      <StillRoomHero lede="Twelve drinks that take between four hours and three weeks to make. The technique is the point — and the reason the price sits where it does." />
 
       {/* The three families, as pinned chapters */}
       {DRINK_FAMILIES.map((family, i) => (

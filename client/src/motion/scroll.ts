@@ -35,6 +35,28 @@ export function usePassProgress(ref: React.RefObject<HTMLElement | null>) {
   return { progress: enabled ? scrollYProgress : frozen, enabled };
 }
 
+/**
+ * Progress across a hero leaving the viewport: 0 while it sits at rest, 1
+ * when its bottom edge reaches the top of the screen.
+ *
+ * `usePassProgress` is wrong for a hero. Its window opens before the element
+ * has entered, so an element already on screen at load starts part-way
+ * through and its parallax is pre-offset on first paint. This one starts at
+ * zero, which is what lets a hero settle before it begins to move.
+ */
+export function useExitProgress(ref: React.RefObject<HTMLElement | null>) {
+  const { canAnimate, isMobile } = useMotionState();
+  const enabled = canAnimate && !isMobile;
+
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start start', 'end start'],
+  });
+
+  const frozen = useMotionValue(0);
+  return { progress: enabled ? scrollYProgress : frozen, enabled };
+}
+
 /** Depth-rate parallax on y. Returns a ready-to-spread motion style value. */
 export function useParallax(progress: MotionValue<number>, rate: number, enabled = true) {
   const frozen = useMotionValue('0%');
