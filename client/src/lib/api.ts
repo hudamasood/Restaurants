@@ -124,3 +124,80 @@ export interface MenuPayload {
 export function getMenu() {
   return request<MenuPayload>('/api/menu');
 }
+
+/* ── Admin ─────────────────────────────────────────────────────────── */
+
+export interface Session {
+  id: string;
+  email: string;
+  name: string;
+  role: 'owner' | 'manager' | 'staff';
+}
+
+export interface AdminBooking {
+  id: string;
+  reference: string;
+  date: string;
+  time: string;
+  partySize: number;
+  seatingArea: string;
+  seatingAreaName: string;
+  name: string;
+  email: string;
+  phone: string;
+  occasion: string;
+  dietaryNotes: string;
+  accessibilityNotes: string;
+  status: string;
+  tableAssignment: string | null;
+  internalNotes: string;
+  createdAt: string;
+}
+
+export interface AdminDish {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  price: number;
+  priceNote: string | null;
+  course: string;
+  courseName: string;
+  station: string;
+  stationName: string;
+  isAvailable: boolean;
+  isSignature: boolean;
+  pickupEligible: boolean;
+  sortOrder: number;
+  image: string | null;
+  updatedAt: string;
+}
+
+export const admin = {
+  me: () => request<{ session: Session }>('/api/admin/session'),
+  signIn: (email: string, password: string) =>
+    request<{ session: Session }>('/api/admin/session', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    }),
+  signOut: () => request<{ ok: true }>('/api/admin/session', { method: 'DELETE' }),
+  day: (date: string) =>
+    request<{ date: string; covers: number; bookings: AdminBooking[] }>(
+      `/api/admin/reservations?date=${encodeURIComponent(date)}`,
+    ),
+  updateBooking: (patch: {
+    id: number;
+    status?: string;
+    tableAssignment?: string | null;
+    internalNotes?: string;
+  }) => request<{ booking: Partial<AdminBooking> }>('/api/admin/reservations', {
+    method: 'PATCH',
+    body: JSON.stringify(patch),
+  }),
+  dishes: () => request<{ dishes: AdminDish[] }>('/api/admin/dishes'),
+  updateDish: (patch: { id: string } & Partial<AdminDish>) =>
+    request<{ dish: Partial<AdminDish> }>('/api/admin/dishes', {
+      method: 'PATCH',
+      body: JSON.stringify(patch),
+    }),
+};

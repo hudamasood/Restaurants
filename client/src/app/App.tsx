@@ -1,5 +1,5 @@
 import { Suspense, lazy, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { Nav } from '@/components/layout/Nav';
 import { Footer } from '@/components/layout/Footer';
 import { SkipLink } from '@/components/layout/PageShell';
@@ -24,18 +24,44 @@ const Allergens = lazy(() => import('@/pages/Allergens'));
 const Legal = lazy(() => import('@/pages/Legal'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
+// Admin is its own lazy chunk, so a public visitor never downloads it.
+const AdminService = lazy(() => import('@/pages/admin/Service'));
+const AdminMenu = lazy(() => import('@/pages/admin/MenuAdmin'));
+
 function RouteFallback() {
   return <div style={{ minHeight: '100svh' }} aria-hidden="true" />;
 }
 
-export function App() {
+/** Owns its own state so App can return early for admin without
+ *  conditionally calling hooks. */
+function PublicLoader() {
   const [loaded, setLoaded] = useState(false);
+  return loaded ? null : <Loader onDone={() => setLoaded(true)} />;
+}
+
+export function App() {
+  const { pathname } = useLocation();
+
+  // Admin gets none of the public chrome. It is a tool used mid-service, so
+  // the loader, the nav, the footer and the oxblood page wipe are all wrong
+  // there — a manager seating a table should not wait on a 900ms transition.
+  if (pathname.startsWith('/admin')) {
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          <Route path="/admin" element={<AdminService />} />
+          <Route path="/admin/menu" element={<AdminMenu />} />
+          <Route path="/admin/*" element={<AdminService />} />
+        </Routes>
+      </Suspense>
+    );
+  }
 
   return (
     <>
       <JsonLd />
       <SkipLink />
-      {!loaded && <Loader onDone={() => setLoaded(true)} />}
+      <PublicLoader />
       <Nav />
 
       <PageTransition>
