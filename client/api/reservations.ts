@@ -1,6 +1,7 @@
 import { createReservation as schema, referenceParam } from './_lib/schema.ts';
 import { createReservation, findByReference } from './_lib/reservations.ts';
 import { json, fail, rateLimit, clientIp, fieldErrors } from './_lib/http.ts';
+import { sendEmail, confirmationEmail } from './_lib/email.ts';
 
 export const config = { runtime: 'nodejs' };
 
@@ -38,7 +39,21 @@ export default async function handler(req: Request): Promise<Response> {
         // 409: the request was well-formed but the world changed underneath it.
         return json({ error: { message: result.message, code: result.code } }, 409);
       }
-      return json({ booking: result.booking }, 201);
+      // The reservation is committed. Email is best-effort from here: a mail
+      // outage must not turn a successful booking into a failed request, so
+      // the result is reported alongside the booking rather than thrown.
+      const mail = confirmationEmail(result.booking);
+      const sent = await sendEmail({
+        to: result.booking.email,
+        subject: mail.subject,
+        html: mail.html,
+        text: mail.text,
+      });
+      if (!sent.sent && sent.reason === 'failed') {
+        console.error('confirmation email failed', result.booking.reference, sent.detail);
+      }
+
+      return json({ booking: result.booking, emailed: sent.sent }, 201);
     } catch (e) {
       console.error('create failed', e);
       return fail('Could not complete the booking', 500);

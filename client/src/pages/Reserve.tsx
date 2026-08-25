@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
-import { useQuery } from '@tanstack/react-query';
-import { getAvailability, createReservation } from '@/lib/api';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { getAvailability, createReservation, type BookingInput } from '@/lib/api';
 import { PageShell } from '@/components/layout/PageShell';
 import { Picture } from '@/components/media/Picture';
 import { LineMask } from '@/components/motion/LineMask';
@@ -31,7 +31,6 @@ export default function Reserve() {
 
   const step = Math.min(5, Math.max(1, Number(params.get('step') ?? '1')));
   const [direction, setDirection] = useState<1 | -1>(1);
-  const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -105,38 +104,24 @@ export default function Reserve() {
   });
   const slots = availability.data?.slots ?? [];
 
-  const submit = async () => {
-    const parsed = detailsSchema.safeParse(draft);
-    if (!parsed.success) {
-      const next: Record<string, string> = {};
-      for (const issue of parsed.error.issues) next[String(issue.path[0])] = issue.message;
-      setErrors(next);
-      return;
-    }
-    setErrors({});
-    setSubmitting(true);
-    setSubmitError(null);
+  const booking = useMutation({
+    mutationFn: (input: BookingInput) => createReservation(input),
+    onMutate: () => {
+      setErrors({});
+      setSubmitError(null);
+    },
+    onSuccess: (result) => {
+      if (result.ok) {
+        sessionStorage.removeItem(DRAFT_KEY);
+        navigate(`/reserve/${result.data.booking.reference}`);
+        return;
+      }
 
-    const result = await createReservation({
-      date: draft.date!,
-      time: draft.time!,
-      partySize: draft.partySize!,
-      seatingArea: draft.seatingArea!,
-      name: draft.name,
-      email: draft.email,
-      phone: draft.phone,
-      occasion: draft.occasion,
-      dietaryNotes: draft.dietaryNotes,
-      accessibilityNotes: draft.accessibilityNotes,
-    });
-
-    setSubmitting(false);
-
-    if (!result.ok) {
       if (result.kind === 'validation') {
         setErrors(result.fields);
         return;
       }
+
       if (result.kind === 'conflict') {
         // The slot filled between choosing it and confirming. Send the guest
         // back to the time step with fresh availability rather than leaving
@@ -149,14 +134,34 @@ export default function Reserve() {
         }
         return;
       }
-      // The draft is deliberately left in sessionStorage so a network failure
-      // costs the guest nothing.
+
+      // The draft deliberately stays in sessionStorage, so a failure here
+      // costs the guest nothing they typed.
       setSubmitError(result.message);
+    },
+    onError: (e: Error) => setSubmitError(e.message || 'Could not complete the booking.'),
+  });
+
+  const submit = () => {
+    const parsed = detailsSchema.safeParse(draft);
+    if (!parsed.success) {
+      const next: Record<string, string> = {};
+      for (const issue of parsed.error.issues) next[String(issue.path[0])] = issue.message;
+      setErrors(next);
       return;
     }
-
-    sessionStorage.removeItem(DRAFT_KEY);
-    navigate(`/reserve/${result.data.booking.reference}`);
+    booking.mutate({
+      date: draft.date!,
+      time: draft.time!,
+      partySize: draft.partySize!,
+      seatingArea: draft.seatingArea!,
+      name: draft.name,
+      email: draft.email,
+      phone: draft.phone,
+      occasion: draft.occasion,
+      dietaryNotes: draft.dietaryNotes,
+      accessibilityNotes: draft.accessibilityNotes,
+    });
   };
 
   const canAdvance = [
@@ -295,10 +300,10 @@ export default function Reserve() {
                 <button
                   type="button"
                   onClick={submit}
-                  disabled={submitting}
+                  disabled={booking.isPending}
                   className="btn btn--filled"
                 >
-                  <span>{submitting ? 'Confirming…' : 'Confirm reservation'}</span>
+                  <span>{booking.isPending ? 'Confirming…' : 'Confirm reservation'}</span>
                 </button>
               )}
             </div>
