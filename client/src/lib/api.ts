@@ -94,3 +94,21 @@ export function createReservation(input: BookingInput) {
     body: JSON.stringify(input),
   });
 }
+
+export interface EnquiryInput {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  /** Honeypot. Hidden from people, so anything here came from a bot. */
+  website?: string;
+  /** When the form rendered, used to catch impossibly fast submissions. */
+  startedAt?: number;
+}
+
+export function sendEnquiry(input: EnquiryInput) {
+  return request<{ received: true; notified: boolean }>('/api/contact', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}

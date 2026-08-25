@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { z } from 'zod';
+import { useMutation } from '@tanstack/react-query';
+import { sendEnquiry } from '@/lib/api';
 import { PageShell } from '@/components/layout/PageShell';
 import { LineMask } from '@/components/motion/LineMask';
 import { Reveal } from '@/components/motion/Reveal';
@@ -26,10 +28,35 @@ export default function Contact() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sent, setSent] = useState(false);
-  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  // Honeypot: hidden from people, so anything in it came from a bot.
+  const [website, setWebsite] = useState('');
+  // When this form rendered, used to catch submissions faster than a person
+  // could plausibly type.
+  const startedAt = useRef(Date.now());
   const today = todayHours();
 
-  const submit = async (e: React.FormEvent) => {
+  const enquiry = useMutation({
+    mutationFn: sendEnquiry,
+    onMutate: () => {
+      setErrors({});
+      setSendError(null);
+    },
+    onSuccess: (result) => {
+      if (result.ok) {
+        setSent(true);
+        return;
+      }
+      if (result.kind === 'validation') {
+        setErrors(result.fields);
+        return;
+      }
+      setSendError(result.message);
+    },
+    onError: (e: Error) => setSendError(e.message || 'Could not send your message.'),
+  });
+
+  const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
@@ -38,11 +65,7 @@ export default function Contact() {
       setErrors(next);
       return;
     }
-    setErrors({});
-    setSending(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSending(false);
-    setSent(true);
+    enquiry.mutate({ ...form, website, startedAt: startedAt.current });
   };
 
   const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(
@@ -267,9 +290,42 @@ export default function Contact() {
                     {errors.message && <p className="field__error">{errors.message}</p>}
                   </div>
 
+                  {/* Honeypot. Hidden from people and from assistive tech, so
+                      anything that arrives in it came from a bot. Not
+                      display:none — some bots skip those. */}
+                  <div aria-hidden="true" className="u-vh">
+                    <label htmlFor="c-website">Leave this field empty</label>
+                    <input
+                      id="c-website"
+                      name="website"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                    />
+                  </div>
+
+                  {sendError && (
+                    <div className="sm:col-span-2">
+                      <p
+                        role="alert"
+                        className="border-l pl-5"
+                        style={{
+                          borderColor: 'var(--color-stop)',
+                          color: 'var(--color-bone)',
+                          paddingTop: '0.35rem',
+                          paddingBottom: '0.35rem',
+                        }}
+                      >
+                        {sendError}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="sm:col-span-2">
-                    <button type="submit" disabled={sending} className="btn btn--filled">
-                      <span>{sending ? 'Sending…' : 'Send enquiry'}</span>
+                    <button type="submit" disabled={enquiry.isPending} className="btn btn--filled">
+                      <span>{enquiry.isPending ? 'Sending…' : 'Send enquiry'}</span>
                     </button>
                   </div>
                 </motion.form>

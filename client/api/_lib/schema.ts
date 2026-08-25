@@ -41,3 +41,19 @@ export const referenceParam = z
   .regex(/^MH-[A-Z0-9]{4}$/, 'Not a valid reference');
 
 export type CreateReservation = z.infer<typeof createReservation>;
+
+/**
+ * Contact enquiry. `website` is a honeypot — hidden in the form, so anything
+ * in it came from a bot. `startedAt` is when the form rendered, used to catch
+ * submissions faster than a person can type.
+ */
+export const createEnquiry = z.object({
+  name: z.string().trim().min(2, 'Please enter a name').max(120),
+  email: z.string().trim().toLowerCase().email('Please enter a valid email').max(200),
+  subject: z.string().trim().min(1).max(120).optional().default('General enquiry'),
+  message: z.string().trim().min(10, 'A little more detail, please').max(5000),
+  website: z.string().max(200).optional().default(''),
+  startedAt: z.coerce.number().int().nonnegative().optional(),
+});
+
+export type CreateEnquiry = z.infer<typeof createEnquiry>;

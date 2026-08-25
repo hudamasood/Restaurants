@@ -26,6 +26,8 @@ export async function sendEmail(opts: {
   subject: string;
   html: string;
   text: string;
+  /** Overrides the default reply-to, so staff can answer the sender directly. */
+  replyTo?: string;
 }): Promise<SendResult> {
   const key = process.env.RESEND_API_KEY;
   if (!key) return { sent: false, reason: 'not_configured' };
@@ -37,7 +39,7 @@ export async function sendEmail(opts: {
       body: JSON.stringify({
         from: FROM,
         to: [opts.to],
-        reply_to: REPLY_TO,
+        reply_to: opts.replyTo ?? REPLY_TO,
         subject: opts.subject,
         html: opts.html,
         text: opts.text,
