@@ -793,3 +793,28 @@ select.field__control {
 .motion-off .enter-fade {
   animation: enter-fade var(--duration-micro) var(--ease-house) backwards;
 }
+
+/* ── Reservation step transitions ─────────────────────────────────────
+   Deliberately keyframes with no forwards fill, so the resting style is
+   the visible one. An interrupted step transition previously stranded the
+   whole step at opacity 0 — the time grid was fully populated underneath
+   and the page simply read as "no times available". */
+@keyframes step-in-forward {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes step-in-back {
+  from { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.step-in-forward {
+  animation: step-in-forward var(--duration-short) var(--ease-house) backwards;
+}
+.step-in-back {
+  animation: step-in-back var(--duration-short) var(--ease-house) backwards;
+}
+.motion-off .step-in-forward,
+.motion-off .step-in-back {
+  animation: enter-fade var(--duration-micro) var(--ease-house) backwards;
+}

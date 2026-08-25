@@ -172,11 +172,6 @@ export default function Reserve() {
     true,
   ][step - 1];
 
-  const variants = {
-    hidden: { opacity: 0, x: canAnimate ? 32 * direction : 0 },
-    show: { opacity: 1, x: 0 },
-    out: { opacity: 0, x: canAnimate ? -32 * direction : 0 },
-  };
 
   return (
     <PageShell
@@ -232,18 +227,17 @@ export default function Reserve() {
               style={{ overflow: 'hidden' }}
             >
               <div ref={containerRef}>
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={step}
-                    variants={variants}
-                    initial="hidden"
-                    animate="show"
-                    exit="out"
-                    transition={{
-                      duration: canAnimate ? DUR.short : DUR.micro,
-                      ease: EASE.house,
-                    }}
-                  >
+                {/* Keyed so each step remounts and replays its entrance. A CSS
+                    keyframe rather than an inline-style transition: an
+                    interrupted one used to leave the whole step at opacity 0,
+                    which read as "no times available" while the grid sat
+                    fully populated underneath. */}
+                <div
+                  key={step}
+                  className={
+                    canAnimate ? (direction === 1 ? 'step-in-forward' : 'step-in-back') : undefined
+                  }
+                >
                     {step === 1 && <StepDate draft={draft} update={update} />}
                     {step === 2 && (
                       <StepTime
@@ -261,8 +255,7 @@ export default function Reserve() {
                     {step === 5 && (
                       <StepDetails draft={draft} update={update} errors={errors} />
                     )}
-                  </motion.div>
-                </AnimatePresence>
+                </div>
               </div>
             </motion.div>
 
@@ -415,35 +408,47 @@ function StepDate({
           const selected = draft.date === iso;
 
           return (
-            <motion.button
+            <button
               key={iso}
               type="button"
               disabled={closed}
               onClick={() => update({ date: iso })}
               title={closed ? 'Closed on Mondays' : undefined}
-              initial={{ opacity: 0, y: canAnimate ? 8 : 0 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: DUR.short,
-                delay: canAnimate ? Math.min(Math.floor(i / 7), 8) * 0.02 : 0,
-                ease: EASE.house,
-              }}
-              className="flex flex-col items-center gap-1 py-3"
+              aria-label={`${d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}${closed ? ' — closed' : ''}`}
+              // A CSS keyframe with no forwards fill: the resting style is the
+              // visible one, so an interrupted entrance cannot strand a date
+              // at partial opacity and make the calendar look unusable.
+              className={canAnimate ? 'enter-rise relative flex flex-col items-center gap-1 py-3' : 'relative flex flex-col items-center gap-1 py-3'}
               style={{
                 border: `1px solid ${selected ? 'var(--color-saffron)' : 'var(--color-smoke)'}`,
                 background: selected ? 'var(--color-ash-3)' : 'transparent',
-                opacity: closed ? 0.3 : 1,
                 cursor: closed ? 'not-allowed' : 'pointer',
-                transition: `all ${DUR.short}s var(--ease-house)`,
+                animationDelay: canAnimate ? `${Math.min(Math.floor(i / 7), 8) * 20}ms` : undefined,
+                transition: `border-color ${DUR.short}s var(--ease-house), background-color ${DUR.short}s var(--ease-house)`,
               }}
             >
-              <span className="u-mono" style={{ color: 'var(--color-bone-faint)', fontSize: '0.5625rem' }}>
+              <span
+                className="u-mono"
+                style={{ color: 'var(--color-bone-faint)', fontSize: '0.5625rem', opacity: closed ? 0.45 : 1 }}
+              >
                 {d.toLocaleDateString('en-GB', { weekday: 'short' })}
               </span>
-              <span className="u-num" style={{ color: 'var(--color-bone)', fontSize: '0.875rem' }}>
+              <span
+                className="u-num"
+                style={{ color: 'var(--color-bone)', fontSize: '0.875rem', opacity: closed ? 0.45 : 1 }}
+              >
                 {d.getDate()}
               </span>
-            </motion.button>
+              {closed && (
+                // Struck through rather than merely dimmed, so a closed day
+                // reads as closed at a glance instead of as low contrast.
+                <span
+                  aria-hidden="true"
+                  className="absolute left-2 right-2 top-1/2"
+                  style={{ height: 1, background: 'var(--color-bone-dim)', opacity: 0.7 }}
+                />
+              )}
+            </button>
           );
         })}
       </div>
@@ -505,40 +510,38 @@ function StepTime({
           {slots.map((slot, i) => {
             const selected = draft.time === slot.time;
             return (
-              <motion.button
+              <button
                 key={slot.time}
                 type="button"
                 disabled={!slot.available}
                 onClick={() => update({ time: slot.time })}
-                initial={{ opacity: 0, y: canAnimate ? 8 : 0 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: DUR.short,
-                  delay: canAnimate ? Math.min(i, 8) * 0.03 : 0,
-                  ease: EASE.house,
-                }}
-                className="u-num relative py-3.5"
+                aria-label={`${slot.time}${slot.available ? '' : ' — fully booked'}`}
+                // See StepDate: a CSS keyframe with no forwards fill, so an
+                // interrupted entrance cannot leave the grid looking dead.
+                className={canAnimate ? 'u-num enter-rise relative py-3.5' : 'u-num relative py-3.5'}
                 style={{
                   border: `1px solid ${selected ? 'var(--color-saffron)' : 'var(--color-smoke)'}`,
                   background: selected ? 'var(--color-ash-3)' : 'transparent',
-                  // Unavailable slots stay visible, struck through — showing
-                  // scarcity converts better than hiding it.
-                  opacity: slot.available ? 1 : 0.3,
                   color: 'var(--color-bone)',
                   fontSize: '0.875rem',
                   cursor: slot.available ? 'pointer' : 'not-allowed',
-                  transition: `all ${DUR.short}s var(--ease-house)`,
+                  animationDelay: canAnimate ? `${Math.min(i, 8) * 30}ms` : undefined,
+                  transition: `border-color ${DUR.short}s var(--ease-house), background-color ${DUR.short}s var(--ease-house)`,
                 }}
               >
-                {slot.time}
+                {/* Unavailable slots stay visible and struck through rather
+                    than hidden — showing scarcity converts better. Dimming is
+                    on the label, not the button, so it cannot collide with
+                    the entrance animation's opacity. */}
+                <span style={{ opacity: slot.available ? 1 : 0.4 }}>{slot.time}</span>
                 {!slot.available && (
                   <span
                     aria-hidden="true"
                     className="absolute left-3 right-3 top-1/2"
-                    style={{ height: 1, background: 'var(--color-bone-dim)' }}
+                    style={{ height: 1, background: 'var(--color-bone-dim)', opacity: 0.7 }}
                   />
                 )}
-              </motion.button>
+              </button>
             );
           })}
         </div>
