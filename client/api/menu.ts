@@ -1,5 +1,5 @@
-import { getMenu } from './_lib/menu.ts';
-import { json, fail, rateLimit, clientIp } from './_lib/http.ts';
+import { getMenu } from './_lib/menu';
+import { json, fail, rateLimit, clientIp } from './_lib/http';
 
 export const config = { runtime: 'nodejs' };
 

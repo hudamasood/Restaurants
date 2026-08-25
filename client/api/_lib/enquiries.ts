@@ -1,7 +1,7 @@
-import { sql } from './db.ts';
-import { checkSpam } from './spam.ts';
-import { sendEmail } from './email.ts';
-import type { CreateEnquiry } from './schema.ts';
+import { sql } from './db';
+import { checkSpam } from './spam';
+import { sendEmail } from './email';
+import type { CreateEnquiry } from './schema';
 
 const TO = process.env.ENQUIRY_INBOX ?? process.env.EMAIL_REPLY_TO ?? 'reservations@marrowandhearth.com';
 

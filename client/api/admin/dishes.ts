@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { sql } from '../_lib/db.ts';
-import { json, fail, fieldErrors } from '../_lib/http.ts';
-import { requireAdmin, auditLog } from '../_lib/auth.ts';
+import { sql } from '../_lib/db';
+import { json, fail, fieldErrors } from '../_lib/http';
+import { requireAdmin, auditLog } from '../_lib/auth';
 
 export const config = { runtime: 'nodejs' };
 

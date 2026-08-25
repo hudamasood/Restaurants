@@ -1,0 +1,25 @@
+{
+  // Vercel compiles each function in api/ on its own, resolving a tsconfig by
+  // walking up from the file. The repo root's tsconfig.json is solution-style
+  // — `files: []` plus references — so it carries no compilerOptions, and the
+  // functions were being compiled with bare defaults: no Node globals, which
+  // is what produced "Cannot find name 'process'" and "Cannot find name
+  // 'Buffer'" on deploy while `tsc -b` passed locally.
+  //
+  // This sits inside api/ so that per-function compile finds it first. It is
+  // deliberately not part of the `tsc -b` graph; tsconfig.api.json still owns
+  // the local type check and keeps the same settings.
+  "compilerOptions": {
+    "target": "es2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "types": ["node"],
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true
+  },
+  "include": ["."]
+}

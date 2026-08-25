@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 import { createHash } from 'node:crypto';
-import { putObject } from './storage.ts';
+import { putObject } from './storage';
 
 /**
  * Build-equivalent derivatives at request time, so an admin upload lands on

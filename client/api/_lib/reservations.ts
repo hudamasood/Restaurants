@@ -1,6 +1,6 @@
-import { sql } from './db.ts';
-import { areaHasRoom } from './availability.ts';
-import type { CreateReservation } from './schema.ts';
+import { sql } from './db';
+import { areaHasRoom } from './availability';
+import type { CreateReservation } from './schema';
 
 const CHARS = 'ACDEFGHJKLMNPQRTUVWXY34679'; // no easily-confused glyphs
 

@@ -38,9 +38,15 @@ function devApi(): PluginOption {
       // Starting a second one would only fail on EADDRINUSE.
       if (await portInUse(Number(process.env.DEV_API_PORT ?? 8787))) return;
 
+      // tsx rather than node's own type stripping: api/ imports are
+      // extensionless, which is what Vercel's compiler requires, and node's
+      // ESM resolver will not resolve `./db` to `./db.ts`.
       child = spawn(
         process.execPath,
-        ['--experimental-strip-types', path.resolve(__dirname, 'scripts/dev-api.ts')],
+        [
+          path.resolve(__dirname, 'node_modules/tsx/dist/cli.mjs'),
+          path.resolve(__dirname, 'scripts/dev-api.ts'),
+        ],
         { stdio: 'inherit', env: process.env },
       );
       child.on('exit', (code) => {

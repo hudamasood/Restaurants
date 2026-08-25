@@ -1,4 +1,4 @@
-import { sql } from './db.ts';
+import { sql } from './db';
 
 /**
  * Layered spam checks, cheapest first, none of which ask anything of a real

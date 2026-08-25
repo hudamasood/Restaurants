@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { sql } from '../_lib/db.ts';
-import { json, fail, rateLimit, clientIp } from '../_lib/http.ts';
+import { sql } from '../_lib/db';
+import { json, fail, rateLimit, clientIp } from '../_lib/http';
 import {
   verifyPassword, issueToken, sessionCookie, clearCookie, currentSession, auditLog,
-} from '../_lib/auth.ts';
+} from '../_lib/auth';
 
 export const config = { runtime: 'nodejs' };
 

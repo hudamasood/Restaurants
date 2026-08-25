@@ -5,7 +5,10 @@
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
+    // No `allowImportingTsExtensions`. api/ imports are extensionless, because
+    // Vercel compiles those functions with a config that does not enable it —
+    // leaving the flag on here would let a `.ts` specifier back in and it
+    // would only fail on deploy.
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,

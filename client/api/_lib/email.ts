@@ -1,4 +1,4 @@
-import type { Booking } from './reservations.ts';
+import type { Booking } from './reservations';
 
 /**
  * Transactional email.

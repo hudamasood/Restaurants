@@ -1,4 +1,4 @@
-import { sql } from './db.ts';
+import { sql } from './db';
 
 /**
  * Returns the menu in exactly the shape src/types/index.ts already declares,

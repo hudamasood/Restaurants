@@ -1,8 +1,8 @@
-import { sql } from '../_lib/db.ts';
-import { json, fail } from '../_lib/http.ts';
-import { requireAdmin, auditLog } from '../_lib/auth.ts';
-import { storageConfig } from '../_lib/storage.ts';
-import { processImage } from '../_lib/images.ts';
+import { sql } from '../_lib/db';
+import { json, fail } from '../_lib/http';
+import { requireAdmin, auditLog } from '../_lib/auth';
+import { storageConfig } from '../_lib/storage';
+import { processImage } from '../_lib/images';
 
 export const config = {
   runtime: 'nodejs',

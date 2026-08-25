@@ -1,6 +1,6 @@
-import { availabilityQuery } from './_lib/schema.ts';
-import { getAvailability } from './_lib/availability.ts';
-import { json, fail, rateLimit, clientIp, fieldErrors } from './_lib/http.ts';
+import { availabilityQuery } from './_lib/schema';
+import { getAvailability } from './_lib/availability';
+import { json, fail, rateLimit, clientIp, fieldErrors } from './_lib/http';
 
 export const config = { runtime: 'nodejs' };
 
