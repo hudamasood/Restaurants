@@ -36,6 +36,42 @@ cd client
 npm run build
 ```
 
+## Backups
+
+Neon's point-in-time restore is the primary mechanism. It is continuous, it
+rewinds to any second inside the project's retention window, and it restores
+the schema along with the data. Anything wrong *with the data* — a bad
+migration, a mistaken bulk update, a deletion someone regrets — is its job, and
+it is done from the Neon console. Check what the retention window actually is
+on the current plan; the free tier's is short, and a backup policy nobody has
+looked at is a guess.
+
+The scripts here cover the case point-in-time restore cannot: the Neon project
+itself being gone. A suspended account, a project deleted by someone holding
+the credentials, or a decision to change hosts all leave PITR with nothing to
+rewind. The export is what gets the data out.
+
+```bash
+npm run db:backup                                    # → backups/backup-<timestamp>.json
+npm run db:restore -- backups/backup-<ts>.json       # print the plan, write nothing
+npm run db:restore -- backups/backup-<ts>.json --rehearse
+npm run db:restore -- backups/backup-<ts>.json --confirm
+```
+
+`--rehearse` performs the whole restore against the real database inside a
+transaction and then rolls it back. Run it after any schema change. A restore
+path that has never been executed is not known to work — this one failed four
+separate ways the first time it was actually run, none of which were visible
+from reading it.
+
+`--confirm` is for restoring into a *new, migrated, empty* database. It clears
+every table it restores. It runs as a single transaction, so a failure part-way
+leaves the target exactly as it was.
+
+Exports contain the full reservation book, guest contact details and admin
+password hashes. `backups/` is kept out of git; treat the files as production
+data and store them somewhere access-controlled.
+
 ## Design tokens
 
 The specification names its colours but never numbers them, with one exception — the scrolled-nav
