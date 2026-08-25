@@ -5,7 +5,7 @@ import { LineMask } from '@/components/motion/LineMask';
 import { Reveal } from '@/components/motion/Reveal';
 import { DUR } from '@/motion/constants';
 import { BRAND } from '@/data/brand';
-import { COURSES, DISHES } from '@/data/menu';
+import { useMenu } from '@/hooks/useMenu';
 
 const COLUMNS = [
   { id: 'vegetarian', label: 'Veg' },
@@ -17,6 +17,7 @@ const COLUMNS = [
 
 /** The trust page. No editorialising — the legend states what it states. */
 export default function Allergens() {
+  const { dishes: DISHES, courses: COURSES } = useMenu();
   const [course, setCourse] = useState<string>('all');
 
   const rows = useMemo(

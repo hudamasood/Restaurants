@@ -1,3 +1,5 @@
+import type { Course, Dish, Station } from '@/types';
+
 /**
  * The single place the browser talks to the API. Every call returns a
  * discriminated result rather than throwing, so callers handle the failure
@@ -111,4 +113,14 @@ export function sendEnquiry(input: EnquiryInput) {
     method: 'POST',
     body: JSON.stringify(input),
   });
+}
+
+export interface MenuPayload {
+  stations: Station[];
+  courses: Course[];
+  dishes: Dish[];
+}
+
+export function getMenu() {
+  return request<MenuPayload>('/api/menu');
 }

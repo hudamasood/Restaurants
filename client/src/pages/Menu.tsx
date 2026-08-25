@@ -26,10 +26,12 @@ import {
   writeMenuQuery,
 } from '@/lib/menuFilter';
 import type { CategoryId, DietaryId, MenuQuery } from '@/lib/menuFilter';
-import { DISHES, dishBySlug } from '@/data/menu';
+import { dishBySlug } from '@/data/menu';
+import { useMenu } from '@/hooks/useMenu';
 import type { CourseId, Dish } from '@/types';
 
 export default function Menu() {
+  const { dishes: DISHES } = useMenu();
   const [params, setParams] = useSearchParams();
   const canAnimate = useCanAnimate();
   const [searchOpen, setSearchOpen] = useState(false);

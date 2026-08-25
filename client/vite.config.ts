@@ -25,5 +25,17 @@ export default defineConfig({
       },
     },
   },
-  server: { port: 5173, host: true },
+  server: {
+    port: 5173,
+    host: true,
+    // The functions in api/ are not run by Vite. `npm run dev:api` serves them
+    // on 8787 and this forwards to it, so local dev exercises the real API
+    // instead of silently falling back to bundled seed data.
+    proxy: {
+      '/api': {
+        target: `http://localhost:${process.env.DEV_API_PORT ?? 8787}`,
+        changeOrigin: true,
+      },
+    },
+  },
 });

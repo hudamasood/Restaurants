@@ -8,13 +8,15 @@ import { StickyStage } from '@/components/motion/StickyStage';
 import { DishCard } from '@/components/sections/menu/DishCard';
 import { motion, useTransform, type MotionValue } from 'motion/react';
 import { EASE } from '@/motion/constants';
-import { DISHES } from '@/data/menu';
+import { useMenu } from '@/hooks/useMenu';
 import { DRINK_FAMILIES } from '@/data/site';
 
-const DRINKS = DISHES.filter((d) => d.course === 'zeroProof');
-const HOT = DISHES.filter((d) => d.course === 'coffeeTea');
 
 export default function StillRoom() {
+  const { dishes } = useMenu();
+  const DRINKS = dishes.filter((d) => d.course === 'zeroProof');
+  const HOT = dishes.filter((d) => d.course === 'coffeeTea');
+
   return (
     <PageShell
       title="The Still Room"

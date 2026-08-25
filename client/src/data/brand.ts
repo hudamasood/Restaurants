@@ -34,7 +34,9 @@ export const BRAND = {
 
 /** Feature flags. Ordering is built in full but dark at launch. */
 export const FEATURES = {
-  ordering: import.meta.env.VITE_FEATURE_ORDERING === 'true',
+  // Optional chaining so this module can also be imported outside Vite,
+  // for example by the seed script.
+  ordering: import.meta.env?.VITE_FEATURE_ORDERING === 'true',
   reviews: true,
 } as const;
 
