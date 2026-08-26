@@ -217,7 +217,7 @@ export const DRINK_FAMILIES = [
     technique: 'Milk-washed and filtered',
     description:
       'Juice is curdled with milk and warm acid, then filtered until the colour drops out and only weight, structure and aroma remain. It takes between twelve and eighteen hours and produces a drink that looks like water and does not taste like it.',
-    image: img('1595475207225-428b62bda831'),
+    image: img('1560512823-829485b8bf24'),
   },
   {
     id: 'f2',

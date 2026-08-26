@@ -7,13 +7,13 @@ import { useExitProgress } from '@/motion/scroll';
 import { img } from '@/data/brand';
 
 /**
- * The Still Room hero: the room full bleed, drifting slowly against the
- * scroll, with the type rising and dimming as the section leaves. It opens on
- * the architecture rather than on the drinks, which have three pinned chapters
- * of their own further down the page.
+ * The Still Room hero: a zero-proof drink full bleed at 100svh, drifting
+ * slowly against the scroll, with the type rising and dimming as the section
+ * leaves. The copy is about what is in the glass and the work behind it, so
+ * the frame shows the glass rather than the room it is poured in.
  */
 
-const BASE = img('1550966871-3ed3cdb5ed0c'); // private dining, smoked oak
+const BASE = img('1514362545857-3bc16c4c7d1b'); // a zero-proof drink, low light
 
 export function StillRoomHero({ lede }: { lede: string }) {
   const ref = useRef<HTMLElement>(null);
@@ -27,7 +27,7 @@ export function StillRoomHero({ lede }: { lede: string }) {
     <header
       ref={ref}
       className="u-grain relative flex flex-col justify-end overflow-hidden"
-      style={{ minHeight: '92svh', paddingTop: 'var(--nav-h)' }}
+      style={{ minHeight: '100svh', paddingTop: 'var(--nav-h)' }}
     >
       <motion.div className="absolute inset-0" style={enabled ? { y: baseY } : undefined}>
         <Picture

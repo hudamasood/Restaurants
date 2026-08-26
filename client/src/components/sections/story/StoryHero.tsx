@@ -7,12 +7,11 @@ import { useExitProgress } from '@/motion/scroll';
 import { BRAND, img } from '@/data/brand';
 
 /**
- * The Story hero: the clay wall full bleed, drifting slowly against the
- * scroll, with the type rising and dimming as the section leaves.
+ * The Story hero: the grill full bleed at 100svh, drifting slowly against the
+ * scroll, with the type rising and dimming as the section leaves. Fire is what
+ * the copy is about, so fire is what the frame shows.
  */
-
-/** Not a homepage hero chapter, and used nowhere else on this page. */
-const BASE = img('1585032226651-759b368d7246'); // the clay wall at 480°C
+const BASE = img('1615937657715-bc7b4b7962c1'); // the grill — dry-aged on the bone, over fire
 
 export function StoryHero({ lede }: { lede: string }) {
   const ref = useRef<HTMLElement>(null);
@@ -28,7 +27,7 @@ export function StoryHero({ lede }: { lede: string }) {
     <header
       ref={ref}
       className="u-grain relative flex flex-col justify-end overflow-hidden"
-      style={{ minHeight: '88svh', paddingTop: 'var(--nav-h)' }}
+      style={{ minHeight: '100svh', paddingTop: 'var(--nav-h)' }}
     >
       <motion.div
         className="absolute inset-0"
