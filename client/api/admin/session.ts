@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { sql } from '../_lib/db';
-import { json, fail, rateLimit, clientIp } from '../_lib/http';
+import { sql } from '../_lib/db.js';
+import { json, fail, rateLimit, clientIp } from '../_lib/http.js';
 import {
   verifyPassword, issueToken, sessionCookie, clearCookie, currentSession, auditLog,
-} from '../_lib/auth';
+} from '../_lib/auth.js';
 
 export const config = { runtime: 'nodejs' };
 

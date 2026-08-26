@@ -1,6 +1,6 @@
-import { sql } from './db';
-import { areaHasRoom } from './availability';
-import type { CreateReservation } from './schema';
+import { sql } from './db.js';
+import { areaHasRoom } from './availability.js';
+import type { CreateReservation } from './schema.js';
 
 const CHARS = 'ACDEFGHJKLMNPQRTUVWXY34679'; // no easily-confused glyphs
 

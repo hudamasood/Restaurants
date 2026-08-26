@@ -1,4 +1,4 @@
-import type { Booking } from './reservations';
+import type { Booking } from './reservations.js';
 
 /**
  * Transactional email.

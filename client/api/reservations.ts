@@ -1,7 +1,7 @@
-import { createReservation as schema, referenceParam } from './_lib/schema';
-import { createReservation, findByReference } from './_lib/reservations';
-import { json, fail, rateLimit, clientIp, fieldErrors } from './_lib/http';
-import { sendEmail, confirmationEmail } from './_lib/email';
+import { createReservation as schema, referenceParam } from './_lib/schema.js';
+import { createReservation, findByReference } from './_lib/reservations.js';
+import { json, fail, rateLimit, clientIp, fieldErrors } from './_lib/http.js';
+import { sendEmail, confirmationEmail } from './_lib/email.js';
 
 export const config = { runtime: 'nodejs' };
 

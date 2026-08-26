@@ -1,7 +1,7 @@
-import { sql } from './db';
-import { checkSpam } from './spam';
-import { sendEmail } from './email';
-import type { CreateEnquiry } from './schema';
+import { sql } from './db.js';
+import { checkSpam } from './spam.js';
+import { sendEmail } from './email.js';
+import type { CreateEnquiry } from './schema.js';
 
 const TO = process.env.ENQUIRY_INBOX ?? process.env.EMAIL_REPLY_TO ?? 'reservations@marrowandhearth.com';
 

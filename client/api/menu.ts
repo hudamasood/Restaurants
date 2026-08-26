@@ -1,5 +1,5 @@
-import { getMenu } from './_lib/menu';
-import { json, fail, rateLimit, clientIp } from './_lib/http';
+import { getMenu } from './_lib/menu.js';
+import { json, fail, rateLimit, clientIp } from './_lib/http.js';
 
 export const config = { runtime: 'nodejs' };
 

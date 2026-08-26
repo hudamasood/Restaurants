@@ -1,4 +1,4 @@
-import { sql } from './db';
+import { sql } from './db.js';
 
 /**
  * Layered spam checks, cheapest first, none of which ask anything of a real

@@ -1,6 +1,6 @@
-import { createEnquiry as schema } from './_lib/schema';
-import { createEnquiry } from './_lib/enquiries';
-import { json, fail, rateLimit, clientIp, fieldErrors } from './_lib/http';
+import { createEnquiry as schema } from './_lib/schema.js';
+import { createEnquiry } from './_lib/enquiries.js';
+import { json, fail, rateLimit, clientIp, fieldErrors } from './_lib/http.js';
 
 export const config = { runtime: 'nodejs' };
 

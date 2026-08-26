@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose';
-import { sql } from './db';
+import { sql } from './db.js';
 
 /**
  * Staff authentication.

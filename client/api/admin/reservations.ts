@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { sql } from '../_lib/db';
-import { json, fail, fieldErrors } from '../_lib/http';
-import { requireAdmin, auditLog } from '../_lib/auth';
-import { dateString } from '../_lib/schema';
+import { sql } from '../_lib/db.js';
+import { json, fail, fieldErrors } from '../_lib/http.js';
+import { requireAdmin, auditLog } from '../_lib/auth.js';
+import { dateString } from '../_lib/schema.js';
 
 export const config = { runtime: 'nodejs' };
 
