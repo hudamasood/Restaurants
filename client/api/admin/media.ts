@@ -3,6 +3,7 @@ import { json, fail } from '../_lib/http.js';
 import { requireAdmin, auditLog } from '../_lib/auth.js';
 import { storageConfig } from '../_lib/storage.js';
 import { processImage } from '../_lib/images.js';
+import { withVercel } from '../_lib/vercel.js';
 
 export const config = {
   runtime: 'nodejs',
@@ -11,7 +12,7 @@ export const config = {
   maxDuration: 60,
 };
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   const auth = await requireAdmin(req, ['owner', 'manager']);
   if (auth instanceof Response) return auth;
 
@@ -79,3 +80,5 @@ export default async function handler(req: Request): Promise<Response> {
     return fail((e as Error).message || 'Could not process the image', 422);
   }
 }
+
+export default withVercel(handler);

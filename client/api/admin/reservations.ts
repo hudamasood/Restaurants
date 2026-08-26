@@ -3,6 +3,7 @@ import { sql } from '../_lib/db.js';
 import { json, fail, fieldErrors } from '../_lib/http.js';
 import { requireAdmin, auditLog } from '../_lib/auth.js';
 import { dateString } from '../_lib/schema.js';
+import { withVercel } from '../_lib/vercel.js';
 
 export const config = { runtime: 'nodejs' };
 
@@ -15,7 +16,7 @@ const patch = z.object({
   internalNotes: z.string().trim().max(2000).optional(),
 });
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   const auth = await requireAdmin(req);
   if (auth instanceof Response) return auth;
 
@@ -106,3 +107,5 @@ export default async function handler(req: Request): Promise<Response> {
 
   return fail('Method not allowed', 405);
 }
+
+export default withVercel(handler);

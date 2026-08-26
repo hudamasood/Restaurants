@@ -2,10 +2,11 @@ import { createReservation as schema, referenceParam } from './_lib/schema.js';
 import { createReservation, findByReference } from './_lib/reservations.js';
 import { json, fail, rateLimit, clientIp, fieldErrors } from './_lib/http.js';
 import { sendEmail, confirmationEmail } from './_lib/email.js';
+import { withVercel } from './_lib/vercel.js';
 
 export const config = { runtime: 'nodejs' };
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   const ip = clientIp(req);
 
   if (req.method === 'GET') {
@@ -62,3 +63,5 @@ export default async function handler(req: Request): Promise<Response> {
 
   return fail('Method not allowed', 405);
 }
+
+export default withVercel(handler);

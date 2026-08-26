@@ -4,6 +4,7 @@ import { json, fail, rateLimit, clientIp } from '../_lib/http.js';
 import {
   verifyPassword, issueToken, sessionCookie, clearCookie, currentSession, auditLog,
 } from '../_lib/auth.js';
+import { withVercel } from '../_lib/vercel.js';
 
 export const config = { runtime: 'nodejs' };
 
@@ -15,7 +16,7 @@ const login = z.object({
 const MAX_ATTEMPTS = 5;
 const LOCK_MINUTES = 15;
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   /* Who am I? */
   if (req.method === 'GET') {
     const s = await currentSession(req);
@@ -81,3 +82,5 @@ export default async function handler(req: Request): Promise<Response> {
 
   return json({ session }, 200, { 'set-cookie': sessionCookie(await issueToken(session)) });
 }
+
+export default withVercel(handler);

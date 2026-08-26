@@ -1,10 +1,11 @@
 import { createEnquiry as schema } from './_lib/schema.js';
 import { createEnquiry } from './_lib/enquiries.js';
 import { json, fail, rateLimit, clientIp, fieldErrors } from './_lib/http.js';
+import { withVercel } from './_lib/vercel.js';
 
 export const config = { runtime: 'nodejs' };
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') return fail('Method not allowed', 405);
 
   const ip = clientIp(req);
@@ -34,3 +35,5 @@ export default async function handler(req: Request): Promise<Response> {
     return fail('Could not send your message. Please call us instead.', 500);
   }
 }
+
+export default withVercel(handler);

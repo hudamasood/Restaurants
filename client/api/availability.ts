@@ -1,10 +1,11 @@
 import { availabilityQuery } from './_lib/schema.js';
 import { getAvailability } from './_lib/availability.js';
 import { json, fail, rateLimit, clientIp, fieldErrors } from './_lib/http.js';
+import { withVercel } from './_lib/vercel.js';
 
 export const config = { runtime: 'nodejs' };
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   if (req.method !== 'GET') return fail('Method not allowed', 405);
   if (!rateLimit(clientIp(req), 60, 60_000)) return fail('Too many requests', 429);
 
@@ -24,3 +25,5 @@ export default async function handler(req: Request): Promise<Response> {
     return fail('Could not load availability', 500);
   }
 }
+
+export default withVercel(handler);
